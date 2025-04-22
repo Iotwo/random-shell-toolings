@@ -6,6 +6,7 @@
 # Req: read-write access on current working directory, cURL v7.64 and higher.
 # Note: for cURL v8.2 and lower. cURL 8.3+ can automatically generate signatures and sign data.
 # Note: to get object metadata (size, etc., user cURL option --head)
+# TBD: add opt for choosing backend (curl <=8.2, curl 8.3+, wget, netcat)
 
 # constants and variables declaration
 declare STR_NAME="$(basename "$0")";
