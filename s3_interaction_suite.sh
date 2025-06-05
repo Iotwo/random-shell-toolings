@@ -364,7 +364,11 @@ curl_put_data_to_s3() {
     fi;
 }
 
-wget_get_data_from_s3() {}
+wget_get_data_from_s3(
+
+    #wget --verbose --server-response --header "Date: ${dt_val}" --header 'Content-Type: application/octet-stream' --header "Authorization: AWS ${a_k}:${signature}" "https://${host}/${bucket}/${object}"
+
+) {}
 
 wget_put_data_to_s3() {}
 
