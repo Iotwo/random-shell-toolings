@@ -314,7 +314,7 @@ curl_head_data_from_s3() {
     fi;
 }
 
-curl_put_data_from_s3() {
+curl_put_data_to_s3() {
     ############################################################
     # DESCR: Perform HTTP PUT on S3, and saves result locally
     # ARGS:
@@ -364,6 +364,10 @@ curl_put_data_from_s3() {
     fi;
 }
 
+wget_get_data_from_s3() {}
+
+wget_put_data_to_s3() {}
+
 perform_access_checks() {
 	############################################################
 	# DESCR: Checks if target directory or target uploaded file
@@ -386,7 +390,7 @@ perform_tooling_utility_checks() {
     declare FLOAT_OLD_CURL_MAX_VER='8.2.1';
 
     declare -a old_curl_tools=( 'base64' 'date' 'openssl' );
-    declare -a wget_tools=();
+    declare -a wget_tools=( 'base64' 'date' 'openssl' );
     declare -a netcat_tools=();
     declare current_curl_ver='';
     declare exists='';
@@ -610,7 +614,7 @@ case "${req}" in
                 method_result=$?;
                 ;;
             'CURL')
-                curl_put_data_from_s3 "$fqdn" "$key_id" "$key_s" "$sigstring" "$obj" "$local_path";
+                curl_put_data_to_s3 "$fqdn" "$key_id" "$key_s" "$sigstring" "$obj" "$local_path";
                 method_result=$?;
                 ;;
             'WGET')
