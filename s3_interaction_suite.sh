@@ -36,8 +36,8 @@ perform_basic_utility_checks;
 
 # constants and variables declaration
 declare STR_NAME="$(basename "$0")";
-declare STR_SHORT_O="b:,r:,f:,t:,a:,s:,o:,l:,h";
-declare STR_LONG_O="backend:,request:,s3-fqdn:,sig-string:,access-key:,secret-key:,object-name:,local-file:,help";
+declare STR_SHORT_O=":b:,r:,f:,t:,a:,s:,o:,l:,h";
+#declare STR_LONG_O="backend:,request:,s3-fqdn:,sig-string:,access-key:,secret-key:,object-name:,local-file:,help";
 declare args_passed="";
 
 declare backend='OLDCURL';
@@ -506,58 +506,48 @@ if [ $# -eq 0 ]; then
     logger --id --rfc5424 --stderr --tag 'info' --priority 'user.info' -- "[$STR_NAME]: $0 finished.";
     exit 0;
 fi;
-args_passed=$(getopt --name "$(basename "${0}")" --options "$STR_SHORT_O" --longoptions "$STR_LONG_O" -- "$@");
-eval set -- "$args_passed";
-logger --id --rfc5424 --tag 'debug' --priority 'user.debug' -- "[$STR_NAME]: Arguments parsed: ($args_passed).";
+#args_passed=$(getopt --name "$(basename "${0}")" --options "$STR_SHORT_O" --longoptions "$STR_LONG_O" -- "$@");
+#eval set -- "$args_passed";
+#logger --id --rfc5424 --tag 'debug' --priority 'user.debug' -- "[$STR_NAME]: Arguments parsed: ($args_passed).";
 
 # agument processing
-while true ; do
-    case "$1" in
-        '-b'|'--backend')
-            backend=$2;
-            shift '2';
-            ;;
-        '-r'|'--request') 
-            req=$2;
-            shift '2';
-            ;;
-        '-f'|'--s3-fqdn')
-            fqdn=$2;
-            shift '2';
-            ;;
-        '-t'|'--sig-string')
-            sigstring=$2;
-            shift '2';
-            ;;
-        '-a'|'--access-key')
-            key_id=$2;
-            shift '2';
-            ;;
-        '-s'|'--secret-key')
-            key_s=$2;
-            shift '2';
-            ;;
-        '-o'|'--object-name')
-            obj=$2;
-            shift '2';
-            ;;
-        '-l'|'--local-file')
-            case "$2" in
-                "")
-                    shift '2';
+while getopts "${STR_SHORT_O}" name; do
+    case "$name" in
+        '-a')  # s3 bucket access key
+             key_id="${OPTARG}";
+             ;;
+        '-b')  # used backend utility
+             backend="${OPTARG}";
+             ;;
+        '-f')  # s3 FQDN
+             fqdn="${OPTARG}";
+             ;;
+        '-h')  # call help
+             print_help;
+             exit 0;
+             ;;
+        '-l')  # local file name to be used in interaction
+             case "$2" in
+                 "")
                     ;;
-                *) 
-                    local_path=$2;
-                    shift '2';
+                 *) 
+                    local_path="${OPTARG}";
                     ;;
-            esac;
-            ;;
-        '-h'|'--help')
-            print_help;
-            exit 0;
-            ;;
+             esac;
+             ;;
+        '-o')  # target s3 object
+             obj="${OPTARG}";
+             ;;
+        '-r')  # operation to perform with the object
+             req="${OPTARG}";
+             ;;
+        '-s') # s3 bucket secret key
+             key_s="${OPTARG}";
+             ;;
+        '-t') # s3 signature string
+             sigstring="${OPTARG}";
+             ;;
         '--')
-            shift '1';
             break;
             ;;
         *)
