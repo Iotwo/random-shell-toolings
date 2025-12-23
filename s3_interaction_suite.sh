@@ -44,14 +44,17 @@ function perform_basic_utility_checks() {
     # check tooling exists
     for utility in "${tools[@]}"
     
-    do
-        exists="$(which "$utility")";
+    do {
+        exists="$(command -v "$utility")";
         w_exc=$?;
 
-        if [ [ -z "${exists}" ] -o [ ${w_exc} -ne 0 ] ]; then
+        if [ -z "${exists}" ] || [ ${w_exc} -ne 0 ]; then {
             echo "Cannot start script ${0}, utility \"${utility}\" is missing!";
             exit 1;
+        }
         fi;
+    }
+
     done;
 
     return 0;
