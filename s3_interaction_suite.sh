@@ -11,7 +11,7 @@
 # constants and variables declaration
 declare STR_NAME="$(basename "$0")";
 declare STR_SHORT_O=":b:,r:,f:,t:,a:,s:,o:,l:,h";
-#declare STR_LONG_O="backend:,request:,s3-fqdn:,sig-string:,access-key:,secret-key:,object-name:,local-file:,help";
+#declare STR_LONG_O="backend:,request:,s3-fqdn:,sig-string:,access-key:,secret-key:,object-name:,local-file:,help";  # not supported in GNU/getopts
 declare args_passed="";
 
 declare backend='OLDCURL';
@@ -509,9 +509,9 @@ if [ $# -eq 0 ]; then
     logger --id --rfc5424 --stderr --tag 'info' --priority 'user.info' -- "[$STR_NAME]: $0 finished.";
     exit 0;
 fi;
-#args_passed=$(getopt --name "$(basename "${0}")" --options "$STR_SHORT_O" --longoptions "$STR_LONG_O" -- "$@");
-#eval set -- "$args_passed";
-#logger --id --rfc5424 --tag 'debug' --priority 'user.debug' -- "[$STR_NAME]: Arguments parsed: ($args_passed).";
+#args_passed=$(getopt --name "$(basename "${0}")" --options "$STR_SHORT_O" --longoptions "$STR_LONG_O" -- "$@");  # not supported in GNU/getopts
+#eval set -- "$args_passed";  # not supported in GNU/getopts
+#logger --id --rfc5424 --tag 'debug' --priority 'user.debug' -- "[$STR_NAME]: Arguments parsed: ($args_passed).";  # not supported in GNU/getopts
 
 # agument processing
 while getopts "${STR_SHORT_O}" name; do
