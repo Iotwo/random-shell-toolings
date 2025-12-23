@@ -37,18 +37,18 @@ function perform_basic_utility_checks() {
     #        supporting the program is available
     ############################################################
 
-    declare -a tools=( 'awk' 'basename' 'cut' 'getopt' 'head' 'logger' 'tail' 'test' );
+    declare -a tools=( 'awk' 'basename' 'cut' 'getopts' 'head' 'logger' 'tail' 'test' '[[' );
     declare exists='';
     declare -i w_exc=-1;
 
-    # check tooling exists
+    # check toolings exist
     for utility in "${tools[@]}"
-    
     do {
         exists="$(command -v "${utility}")";
         w_exc=${?};
 
-        if [ -z "${exists}" ] || [ ${w_exc} -ne 0 ]; then {
+        if [ -z "${exists}" ] || [ ${w_exc} -ne 0 ]; 
+        then {
             echo "Cannot start script ${0}, utility \"${utility}\" is missing!";
             exit 1;
         }
