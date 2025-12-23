@@ -703,12 +703,12 @@ case "${req}" in
         exit 1;
         ;;
 esac;
-logger --id --rfc5424 --tag 'debug' --priority 'user.debug' -- "[${{STR_NAME}}]: subroutine return code: ${method_result}";
+logger --id --rfc5424 --tag 'debug' --priority 'user.debug' -- "[${STR_NAME}]: subroutine return code: ${method_result}";
 
 # process result
 if [ ${method_result} -eq 0 ]; then
-    logger --id --rfc5424 --stderr --tag 'info' --priority 'user.info' -- "[${{STR_NAME}}]: Task executed successfully.";
-    logger --id --rfc5424 --stderr --tag 'info' --priority 'user.info' -- "[${{STR_NAME}}]: ${0} finished.";
+    logger --id --rfc5424 --stderr --tag 'info' --priority 'user.info' -- "[${STR_NAME}]: Task executed successfully.";
+    logger --id --rfc5424 --stderr --tag 'info' --priority 'user.info' -- "[${STR_NAME}]: ${0} finished.";
     exit 0;
 else
     logger --id --rfc5424 --stderr --tag 'warning' --priority 'user.warning' -- "[${STR_NAME}]: Error occured on task execution.";
