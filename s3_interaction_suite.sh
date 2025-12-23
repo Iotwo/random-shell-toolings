@@ -9,7 +9,7 @@
 
 
 # constants and variables declaration
-declare STR_NAME="$(basename "$0")";
+declare STR_NAME="$(basename "${0}")";
 declare STR_SHORT_O=":b:,r:,f:,t:,a:,s:,o:,l:,h";
 #declare STR_LONG_O="backend:,request:,s3-fqdn:,sig-string:,access-key:,secret-key:,object-name:,local-file:,help";  # not supported in GNU/getopts
 declare args_passed="";
@@ -54,7 +54,6 @@ function perform_basic_utility_checks() {
         }
         fi;
     }
-
     done;
 
     return 0;
@@ -72,16 +71,17 @@ function oldcurl_get_data_from_s3() {
     #    (5) - Local file name (optional)
     ############################################################
 
-    logger --id --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[$STR_NAME]: oldcurl_get_data_from_s3, func called with args($#): [$*].";
+    logger --id --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[${STR_NAME}]: oldcurl_get_data_from_s3, func called with args(${#}): [${*}].";
     # dt_val, signature, str_to_sign - variables from global scope
     declare response_code="";
 
     dt_val="$(date -R)";
     str_to_sign="GET\n\napplication/octet-stream\n${dt_val}\n/${4}";
-    signature="$(echo -en "${str_to_sign}" | openssl sha1 -hmac "${3}" -binary | base64)";
+    signature="$(echo -en "${str_to_sign}" | openssl sha1 -hmac "${3}" -binary | base64 -)";
 
-    if [ "${5}" == "" ]; then
-        logger --id --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[$STR_NAME]: oldcurl_get_data_from_s3, Argument \'local path\' is not set. Downloaded data will be saved with s3-object name.";
+    if [ -z "${5}" ]; 
+    then {
+        logger --id --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[${STR_NAME}]: oldcurl_get_data_from_s3, Argument \'local path\' is not set. Downloaded data will be saved with s3-object name.";
         response_code="$(curl \
                             --location \
                             --silent \
@@ -93,8 +93,9 @@ function oldcurl_get_data_from_s3() {
                             --header "Authorization: AWS ${2}:${signature}" \
                             --write-out "%{http_code}" \
                             --url "https://${1}/${4}";)";
-    else
-        logger --id --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[$STR_NAME]: oldcurl_get_data_from_s3, Argument \'local path\' is set. Downloaded data will be saved as ${5}.";
+    }
+    else {
+        logger --id --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[${STR_NAME}]: oldcurl_get_data_from_s3, Argument \'local path\' is set. Downloaded data will be saved as ${5}.";
         response_code="$(curl \
                             --location \
                             --silent \
@@ -106,15 +107,19 @@ function oldcurl_get_data_from_s3() {
                             --header "Authorization: AWS ${2}:${signature}" \
                             --write-out "%{http_code}" \
                             --url "https://${1}/${4}";)";
+    }
     fi;
 
-    if [ "${response_code}" == "200" ]; then
-        logger --id --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[$STR_NAME]: oldcurl_get_data_from_s3, Response code: ${response_code}. Request executed successfully.";
-        logger --id --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[$STR_NAME]: oldcurl_get_data_from_s3, Function exited with code 0.";
+    if [ "${response_code}" == "200" ]; 
+    then {
+        logger --id --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[${STR_NAME}]: oldcurl_get_data_from_s3, Response code: ${response_code}. Request executed successfully.";
+        logger --id --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[${STR_NAME}]: oldcurl_get_data_from_s3, Function exited with code 0.";
         return 0;
-    else
-        logger --id --rfc5424 --stderr --tag 'warning' --priority 'local7.warning' -- "[$STR_NAME]: oldcurl_get_data_from_s3,  Response code: ${response_code}. Something went wrong.";
+    }
+    else {
+        logger --id --rfc5424 --stderr --tag 'warning' --priority 'local7.warning' -- "[${STR_NAME}]: oldcurl_get_data_from_s3,  Response code: ${response_code}. Something went wrong.";
         return 1;
+    }
     fi;
 }
 
@@ -129,15 +134,15 @@ function oldcurl_head_data_from_s3() {
     #    (4) - Object name (with bucket)
     ############################################################
 
-    logger --id --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[$STR_NAME]: oldcurl_head_data_from_s3, func called with args($#): [$*].";
+    logger --id --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[${STR_NAME}]: oldcurl_head_data_from_s3, func called with args(${#}): [${*}].";
     # dt_val, signature, str_to_sign - variables from global scope
-    declare response="";
-    declare response_code="";
-    declare cont_len="";
+    declare response='';
+    declare response_code='';
+    declare cont_len='';
 
     dt_val="$(date -R)";
     str_to_sign="GET\n\napplication/octet-stream\n${dt_val}\n/${4}";
-    signature="$(echo -en "${str_to_sign}" | openssl sha1 -hmac "${3}" -binary | base64)";
+    signature="$(echo -en "${str_to_sign}" | openssl sha1 -hmac "${3}" -binary | base64 - )";
 
     response="$(curl \
                     --location \
@@ -153,17 +158,22 @@ function oldcurl_head_data_from_s3() {
     response_code=$(echo "${response}" | tail --lines 1 | cut --delimiter=',' --fields=1;);
     cont_len=$(echo "${response}" | tail --lines 1 | cut --delimiter=',' --fields=2;);
 
-    if [ "${response_code}" == "200" ]; then
+    if [ "${response_code}" == "200" ]; 
+    then {
         logger --id --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[$STR_NAME]: oldcurl_head_data_from_s3, Response code: ${response_code}. Request executed successfully.";
         logger --id --rfc5424 --stderr --tag 'info' --priority 'local7.info' -- "[$STR_NAME]: oldcurl_head_data_from_s3, Object ${4} exists and has length ${cont_len} bytes."
         logger --id --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[$STR_NAME]: oldcurl_head_data_from_s3, Function exited with code 0.";
         return 0;
-    elif [ "${response_code}" == "404" ]; then
+    }
+    elif [ "${response_code}" == "404" ]; 
+    then {
         logger --id --rfc5424 --stderr --tag 'info' --priority 'local7.info' -- "[$STR_NAME]: oldcurl_head_data_from_s3, Response code: ${response_code}. Requested object is missing on the resource.";
         return 0;
-    else
+    }
+    else {
         logger --id --rfc5424 --stderr --tag 'warning' --priority 'local7.warning' -- "[$STR_NAME]: oldcurl_head_data_from_s3,  Response code: ${response_code}. Something went wrong.";
         return 1;
+    }
     fi;
 }
 
@@ -179,21 +189,27 @@ function oldcurl_put_data_to_s3() {
     #    (5) - Local file name 
     ############################################################
 
-    logger --id --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[$STR_NAME]: oldcurl_put_data_to_s3, func called with args($#): [$*].";
+    logger --id --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[${STR_NAME}]: oldcurl_put_data_to_s3, func called with args(${#}): [${*}].";
     # dt_val, signature, str_to_sign - variables from global scope
-    declare response_code="";
+    declare response_code='';
 
-    if [ "${5}" == "" ]; then
-        logger --id --rfc5424 --stderr --tag 'error' --priority 'local7.error' -- "[$STR_NAME]: oldcurl_put_data_to_s3, file name not set: \'${5}\'.";
+    if [ -z "${5}" ]; 
+    then {
+        logger --id --rfc5424 --stderr --tag 'error' --priority 'local7.error' -- "[${STR_NAME}]: oldcurl_put_data_to_s3, file name not set: \'${5}\'.";
         return 1;
+    }
     fi;
-    if [ ! -f "${5}" ]; then
-        logger --id --rfc5424 --stderr --tag 'error' --priority 'local7.error' -- "[$STR_NAME]: oldcurl_put_data_to_s3, file \'${5}\' does not exist!";
+    if [ ! -f "${5}" ]; 
+    then {
+        logger --id --rfc5424 --stderr --tag 'error' --priority 'local7.error' -- "[${STR_NAME}]: oldcurl_put_data_to_s3, file \'${5}\' does not exist!";
         return 1; 
+    }
     fi;
-    if [ ! -r "${5}" ]; then
-        logger --id --rfc5424 --stderr --tag 'error' --priority 'local7.error' -- "[$STR_NAME]: oldcurl_put_data_to_s3, file \'${5}\' is not readable!";
+    if [ ! -r "${5}" ]; 
+    then {
+        logger --id --rfc5424 --stderr --tag 'error' --priority 'local7.error' -- "[${STR_NAME}]: oldcurl_put_data_to_s3, file \'${5}\' is not readable!";
         return 1;
+    }
     fi;
 
     dt_val="$(date -R)";
@@ -212,13 +228,16 @@ function oldcurl_put_data_to_s3() {
                         --upload-file "${5}" \
                         --url "https://${1}/${4}";)";
 
-    if [ "${response_code}" == "200" ]; then
-        logger --id --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[$STR_NAME]: oldcurl_put_data_to_s3, Response code: ${response_code}. Request executed successfully.";
-        logger --id --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[$STR_NAME]: oldcurl_put_data_to_s3, func exited with code 0.";
+    if [ "${response_code}" == "200" ]; 
+    then {
+        logger --id --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[${STR_NAME}]: oldcurl_put_data_to_s3, Response code: ${response_code}. Request executed successfully.";
+        logger --id --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[${STR_NAME}]: oldcurl_put_data_to_s3, func exited with code 0.";
         return 0;
-    else
-        logger --id --rfc5424 --stderr --tag 'warning' --priority 'local7.warning' -- "[$STR_NAME]: oldcurl_put_data_to_s3, Response code: ${response_code}. Something went wrong.";
+    }
+    else {
+        logger --id --rfc5424 --stderr --tag 'warning' --priority 'local7.warning' -- "[${STR_NAME}]: oldcurl_put_data_to_s3, Response code: ${response_code}. Something went wrong.";
         return 1;
+    }
     fi;
 }
 
@@ -235,12 +254,13 @@ function curl_get_data_from_s3() {
     #    (6) - Local file name (optional)
     ############################################################
 
-    logger --id --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[$STR_NAME]: curl_get_data_from_s3, func called with args($#): [$*].";
+    logger --id --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[${STR_NAME}]: curl_get_data_from_s3, func called with args(${#}): [${*}].";
 
     declare response_code="";
 
-    if [ "${6}" == "" ]; then
-        logger --id --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[$STR_NAME]: curl_get_data_from_s3, Argument \'local path\' is not set. Downloaded data will be saved with s3-object name.";
+    if [ -z "${6}" ]; 
+    then {
+        logger --id --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[${STR_NAME}]: curl_get_data_from_s3, Argument \'local path\' is not set. Downloaded data will be saved with s3-object name.";
         response_code="$(curl \
                            --location \
                            --silent \
@@ -251,8 +271,9 @@ function curl_get_data_from_s3() {
                            --user "${2}:${3}" \
                            --write-out "%{response_code}" \
                            --url "https://${1}/${5}";)";
-    else
-        logger --id --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[$STR_NAME]: curl_get_data_from_s3, Argument \'local path\' is set. Downloaded data will be saved as ${6}.";
+    }
+    else {
+        logger --id --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[${STR_NAME}]: curl_get_data_from_s3, Argument \'local path\' is set. Downloaded data will be saved as ${6}.";
         response_code="$(curl \
                            --location \
                            --silent \
@@ -263,15 +284,19 @@ function curl_get_data_from_s3() {
                            --user "${2}:${3}" \
                            --write-out "%{response_code}" \
                            --url "https://${1}/${5}";)";
+    }
     fi;
 
-    if [ "${response_code}" == "200" ]; then
-        logger --id --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[$STR_NAME]: curl_get_data_from_s3, Response code: ${response_code}. Request executed successfully.";
-        logger --id --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[$STR_NAME]: curl_get_data_from_s3, func exited with code 0.";
+    if [ "${response_code}" == "200" ]; 
+    then {
+        logger --id --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[${STR_NAME}]: curl_get_data_from_s3, Response code: ${response_code}. Request executed successfully.";
+        logger --id --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[${STR_NAME}]: curl_get_data_from_s3, func exited with code 0.";
         return 0;
-    else
-        logger --id --rfc5424 --stderr --tag 'warning' --priority 'local7.warning' -- "[$STR_NAME]: curl_get_data_from_s3,  Response code: ${response_code}. Something went wrong.";
+    }
+    else {
+        logger --id --rfc5424 --stderr --tag 'warning' --priority 'local7.warning' -- "[${STR_NAME}]: curl_get_data_from_s3,  Response code: ${response_code}. Something went wrong.";
         return 1;
+    }
     fi;
 }
 
@@ -287,7 +312,7 @@ function curl_head_data_from_s3() {
     #    (5) - Object name (with bucket)
     ############################################################
 
-    logger --id --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[$STR_NAME]: oldcurl_head_data_from_s3, func called with args($#): [$*].";
+    logger --id --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[${STR_NAME}]: oldcurl_head_data_from_s3, func called with args(${#}): [${*}].";
 
     declare response="";
     declare response_code="";
@@ -304,17 +329,22 @@ function curl_head_data_from_s3() {
     response_code=$(echo "${response}" | tail --lines 1 | cut --delimiter=',' --fields=1;);
     cont_len=$(echo "${response}" | tail --lines 1 | cut --delimiter=',' --fields=2;);
 
-    if [ "${response_code}" == "200" ]; then
-        logger --id --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[$STR_NAME]: curl_head_data_from_s3, Response code: ${response_code}. Request executed successfully.";
-        logger --id --rfc5424 --stderr --tag 'info' --priority 'local7.info' -- "[$STR_NAME]: curl_head_data_from_s3, Object ${5} exists and has length ${cont_len} bytes."
-        logger --id --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[$STR_NAME]: curl_head_data_from_s3, Function exited with code 0.";
+    if [ "${response_code}" == "200" ]; 
+    then {
+        logger --id --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[${STR_NAME}]: curl_head_data_from_s3, Response code: ${response_code}. Request executed successfully.";
+        logger --id --rfc5424 --stderr --tag 'info' --priority 'local7.info' -- "[${STR_NAME}]: curl_head_data_from_s3, Object ${5} exists and has length ${cont_len} bytes."
+        logger --id --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[${STR_NAME}]: curl_head_data_from_s3, Function exited with code 0.";
         return 0;
-    elif [ "${response_code}" == "404" ]; then
-        logger --id --rfc5424 --stderr --tag 'info' --priority 'local7.info' -- "[$STR_NAME]: curl_head_data_from_s3, Response code: ${response_code}. Requested object is missing on the resource.";
+    }
+    elif [ "${response_code}" == "404" ]; 
+    then {
+        logger --id --rfc5424 --stderr --tag 'info' --priority 'local7.info' -- "[${STR_NAME}]: curl_head_data_from_s3, Response code: ${response_code}. Requested object is missing on the resource.";
         return 0;
-    else
-        logger --id --rfc5424 --stderr --tag 'warning' --priority 'local7.warning' -- "[$STR_NAME]: curl_head_data_from_s3,  Response code: ${response_code}. Something went wrong.";
+    }
+    else {
+        logger --id --rfc5424 --stderr --tag 'warning' --priority 'local7.warning' -- "[${STR_NAME}]: curl_head_data_from_s3,  Response code: ${response_code}. Something went wrong.";
         return 1;
+    }
     fi;
 }
 
@@ -330,21 +360,27 @@ function curl_put_data_to_s3() {
     #    (6) - Local file name 
     ############################################################
 
-    logger --id --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[$STR_NAME]: curl_put_data_from_s3, func called with args($#): [$*].";
+    logger --id --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[${STR_NAME}]: curl_put_data_from_s3, func called with args(${#}): [${*}].";
     # dt_val, signature, str_to_sign - variables from global scope
     declare response_code="";
 
-    if [ "${5}" == "" ]; then
-        logger --id --rfc5424 --stderr --tag 'error' --priority 'local7.error' -- "[$STR_NAME]: curl_put_data_from_s3, file name not set: \'${6}\'.";
+    if [ -z "${5}" ]; 
+    then {
+        logger --id --rfc5424 --stderr --tag 'error' --priority 'local7.error' -- "[${STR_NAME}]: curl_put_data_from_s3, file name not set: \'${6}\'.";
         return 1;
+    }
     fi;
-    if [ ! -f "${5}" ]; then
-        logger --id --rfc5424 --stderr --tag 'error' --priority 'local7.error' -- "[$STR_NAME]: curl_put_data_from_s3, file \'${6}\' does not exist!";
+    if [ ! -f "${5}" ]; 
+    then {
+        logger --id --rfc5424 --stderr --tag 'error' --priority 'local7.error' -- "[${STR_NAME}]: curl_put_data_from_s3, file \'${6}\' does not exist!";
         return 1; 
+    }
     fi;
-    if [ ! -r "${5}" ]; then
-        logger --id --rfc5424 --stderr --tag 'error' --priority 'local7.error' -- "[$STR_NAME]: curl_put_data_from_s3, file \'${6}\' is not readable!";
+    if [ ! -r "${5}" ]; 
+    then {
+        logger --id --rfc5424 --stderr --tag 'error' --priority 'local7.error' -- "[${STR_NAME}]: curl_put_data_from_s3, file \'${6}\' is not readable!";
         return 1;
+    }
     fi;
 
     response_code="$(curl \
@@ -358,13 +394,16 @@ function curl_put_data_to_s3() {
                          --upload-file "${6}" \
                          --url "https://${1}/${5}";)";
 
-    if [ "${response_code}" == "200" ]; then
-        logger --id --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[$STR_NAME]: curl_put_data_from_s3, Response code: ${response_code}. Request executed successfully.";
-        logger --id --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[$STR_NAME]: curl_put_data_from_s3, func exited with code 0.";
+    if [ "${response_code}" == "200" ]; 
+    then {
+        logger --id --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[${STR_NAME}]: curl_put_data_from_s3, Response code: ${response_code}. Request executed successfully.";
+        logger --id --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[${STR_NAME}]: curl_put_data_from_s3, func exited with code 0.";
         return 0;
-    else
-        logger --id --rfc5424 --stderr --tag 'warning' --priority 'local7.warning' -- "[$STR_NAME]: curl_put_data_from_s3, Response code: ${response_code}. Something went wrong.";
+    }
+    else {
+        logger --id --rfc5424 --stderr --tag 'warning' --priority 'local7.warning' -- "[${STR_NAME}]: curl_put_data_from_s3, Response code: ${response_code}. Something went wrong.";
         return 1;
+    }
     fi;
 }
 
@@ -393,7 +432,7 @@ function perform_tooling_utility_checks() {
     #   (1) - used backend
     ############################################################
 
-    logger --id --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[$STR_NAME]: perform_tooling_utility_checks, func called with args($#): [$*].";
+    logger --id --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[${STR_NAME}]: perform_tooling_utility_checks, func called with args(${#}): [${*}].";
 
     declare FLOAT_OLD_CURL_MAX_VER='8.2.1';
 
@@ -406,38 +445,38 @@ function perform_tooling_utility_checks() {
 
     case "$1" in
         'OLDCURL')
-            logger --id --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[$STR_NAME]: perform_tooling_utility_checks, argument value is OLDCURL, cURL v8.2- choosen as backend.";
-            logger --id --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[$STR_NAME]: perform_tooling_utility_checks, checking cURL v8.2- exists...";
+            logger --id --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[${STR_NAME}]: perform_tooling_utility_checks, argument value is OLDCURL, cURL v8.2- choosen as backend.";
+            logger --id --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[${STR_NAME}]: perform_tooling_utility_checks, checking cURL v8.2- exists...";
             exists="$(command -v 'curl';)";
             w_exc=$?;
-            logger --id --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[$STR_NAME]: perform_tooling_utility_checks, unix.which returned:\"${exists}\" and exited with code - ${w_exc};";
+            logger --id --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[${STR_NAME}]: perform_tooling_utility_checks, unix.which returned:\"${exists}\" and exited with code - ${w_exc};";
             if [ -z "${exists}" ] || [ ${w_exc} -ne 0 ]; 
             then {
-                logger --id --rfc5424 --stderr --tag 'error' --priority 'local7.error' -- "[$STR_NAME]: perform_tooling_utility_checks, cURL v8.2- does not persist in the system. Aborting with error.";
+                logger --id --rfc5424 --stderr --tag 'error' --priority 'local7.error' -- "[${STR_NAME}]: perform_tooling_utility_checks, cURL v8.2- does not persist in the system. Aborting with error.";
                 exit 1;
             }
             fi;
             #check curl version
             current_curl_ver=$(curl --version | awk -F' ' '{print $2;}' | head -n 1;)
-            logger --id --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[$STR_NAME]: perform_tooling_utility_checks, gathered cURL version is $current_curl_ver";
-            exists=$(printf '%s\n' "$FLOAT_OLD_CURL_MAX_VER" "$current_curl_ver" | sort --version-sort --reverse - | head --lines=1 -);  # highest curl's version stored here
-            if [ "${exists}" == "$FLOAT_OLD_CURL_MAX_VER" ]; 
+            logger --id --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[${STR_NAME}]: perform_tooling_utility_checks, gathered cURL version is ${current_curl_ver}";
+            exists=$(printf '%s\n' "${FLOAT_OLD_CURL_MAX_VER}" "${current_curl_ver}" | sort --version-sort --reverse - | head --lines=1 -);  # highest curl's version stored here
+            if [ "${exists}" == "${FLOAT_OLD_CURL_MAX_VER}" ]; 
             then {
-                logger --id --rfc5424 --stderr --tag 'error' --priority 'local7.error' -- "[$STR_NAME]: perform_tooling_utility_checks, gathered cURL version is not supported by this backend option. Aborting.";
+                logger --id --rfc5424 --stderr --tag 'error' --priority 'local7.error' -- "[${STR_NAME}]: perform_tooling_utility_checks, gathered cURL version is not supported by this backend option. Aborting.";
                 exit 1;
             }
             else
-                 logger --id --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[$STR_NAME]: perform_tooling_utility_checks, cURL v8.2- persists in the system. Checking the rest utilities.";
+                 logger --id --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[${STR_NAME}]: perform_tooling_utility_checks, cURL v8.2- persists in the system. Checking the rest utilities.";
             fi;
     
             for utility in "${old_curl_tools[@]}"
             do {
-                logger --id --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[$STR_NAME]: perform_tooling_utility_checks, checking utility \"${utility}\" exists.";
-                exists="$(which "$utility")";
+                logger --id --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[${STR_NAME}]: perform_tooling_utility_checks, checking utility \"${utility}\" exists.";
+                exists="$(command -v "${utility}")";
                 w_exc=$?;
                 if [ "${exists}" = "" ] || [ ${w_exc} -ne 0 ]; then
                     {
-                    logger --id --rfc5424 --stderr --tag 'error' --priority 'local7.error' -- "[$STR_NAME]: perform_tooling_utility_checks, utility \"${utility}\" is missing. Aborting.";
+                    logger --id --rfc5424 --stderr --tag 'error' --priority 'local7.error' -- "[${STR_NAME}]: perform_tooling_utility_checks, utility \"${utility}\" is missing. Aborting.";
                     exit 1;
                 }
                 fi;
@@ -446,37 +485,37 @@ function perform_tooling_utility_checks() {
 
             ;;
         'CURL') 
-            logger --id --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[$STR_NAME]: perform_tooling_utility_checks, argument value is CURL, cURL v8.3+ choosen as backend.";
-            logger --id --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[$STR_NAME]: perform_tooling_utility_checks, checking cURL v8.3+ exists...";
+            logger --id --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[${STR_NAME}]: perform_tooling_utility_checks, argument value is CURL, cURL v8.3+ choosen as backend.";
+            logger --id --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[${STR_NAME}]: perform_tooling_utility_checks, checking cURL v8.3+ exists...";
             exists="$(command -v 'curl';)";
             w_exc=$?;
-            logger --id --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[$STR_NAME]: perform_tooling_utility_checks, unix.which returned:\"${exists}\" and exited with code - ${w_exc};";
+            logger --id --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[${STR_NAME}]: perform_tooling_utility_checks, unix.which returned:\"${exists}\" and exited with code - ${w_exc};";
             if [ -z "${exists}" ] || [ ${w_exc} -ne 0 ]; 
             then {
-                logger --id --rfc5424 --stderr --tag 'error' --priority 'local7.error' -- "[$STR_NAME]: perform_tooling_utility_checks, cURL v8.3+ does not persist in the system. Aborting with error.";
+                logger --id --rfc5424 --stderr --tag 'error' --priority 'local7.error' -- "[${STR_NAME}]: perform_tooling_utility_checks, cURL v8.3+ does not persist in the system. Aborting with error.";
                 exit 1;
             }
             fi;
             #check curl version
             current_curl_ver=$(curl --version | awk -F' ' '{print $2;}' | head -n 1;)
-            logger --id --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[$STR_NAME]: perform_tooling_utility_checks, gathered cURL version is $current_curl_ver";
-            exists=$(printf '%s\n' "$FLOAT_OLD_CURL_MAX_VER" "$current_curl_ver" | sort --numeric-sort | head --lines 1);  # newest curl's version stored here
-            if [ "${exists}" != "$FLOAT_OLD_CURL_MAX_VER" ]; then 
-                logger --id --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[$STR_NAME]: perform_tooling_utility_checks, cURL v8.3+ persists in the system. Checking the rest utilities.";
+            logger --id --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[${STR_NAME}]: perform_tooling_utility_checks, gathered cURL version is ${current_curl_ver}";
+            exists=$(printf '%s\n' "${FLOAT_OLD_CURL_MAX_VER}" "${current_curl_ver}" | sort --numeric-sort | head --lines 1);  # newest curl's version stored here
+            if [ "${exists}" != "${FLOAT_OLD_CURL_MAX_VER}" ]; then 
+                logger --id --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[${STR_NAME}]: perform_tooling_utility_checks, cURL v8.3+ persists in the system. Checking the rest utilities.";
             else {
-                logger --id --rfc5424 --stderr --tag 'error' --priority 'local7.error' -- "[$STR_NAME]: perform_tooling_utility_checks, gathered cURL version is not supported by this backend option. Aborting.";
+                logger --id --rfc5424 --stderr --tag 'error' --priority 'local7.error' -- "[${STR_NAME}]: perform_tooling_utility_checks, gathered cURL version is not supported by this backend option. Aborting.";
                 exit 1;
             }
             fi;
 
             for utility in "${old_curl_tools[@]}"
             do {
-                logger --id --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[$STR_NAME]: perform_tooling_utility_checks, checking utility \"${utility}\" exists.";
-                exists="$(which "$utility")";
+                logger --id --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[${STR_NAME}]: perform_tooling_utility_checks, checking utility \"${utility}\" exists.";
+                exists="$(command -v "${utility}")";
                 w_exc=$?;
                 if [ "${exists}" = "" ] || [ ${w_exc} -ne 0 ]; then
                     {
-                    logger --id --rfc5424 --stderr --tag 'error' --priority 'local7.error' -- "[$STR_NAME]: perform_tooling_utility_checks, utility \"${utility}\" is missing. Aborting.";
+                    logger --id --rfc5424 --stderr --tag 'error' --priority 'local7.error' -- "[${STR_NAME}]: perform_tooling_utility_checks, utility \"${utility}\" is missing. Aborting.";
                     exit 1;
                 }
                 fi;
@@ -485,33 +524,33 @@ function perform_tooling_utility_checks() {
 
             ;;
         'WGET')
-            logger --id --rfc5424 --stderr --tag 'error' --priority 'local7.error' -- "[$STR_NAME]: perform_tooling_utility_checks, usage of wget as backend is not implemented yet. Aborting.";
+            logger --id --rfc5424 --stderr --tag 'error' --priority 'local7.error' -- "[${STR_NAME}]: perform_tooling_utility_checks, usage of wget as backend is not implemented yet. Aborting.";
             exit 1;
 
             ;;
         'NETCAT')
-            logger --id --rfc5424 --stderr --tag 'error' --priority 'local7.error' -- "[$STR_NAME]: perform_tooling_utility_checks, usage of netcat as backend is not implemented yet. Aborting.";
+            logger --id --rfc5424 --stderr --tag 'error' --priority 'local7.error' -- "[${STR_NAME}]: perform_tooling_utility_checks, usage of netcat as backend is not implemented yet. Aborting.";
             exit 1;
 
             ;;
         *)
-            logger --id --rfc5424 --stderr --tag 'error' --priority 'local7.error' -- "[$STR_NAME]: perform_tooling_utility_checks, Unsupported backend type. Aborting.";
+            logger --id --rfc5424 --stderr --tag 'error' --priority 'local7.error' -- "[${STR_NAME}]: perform_tooling_utility_checks, Unsupported backend type. Aborting.";
             exit 1;
-            
+
             ;;
     esac;
-    logger --id --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[$STR_NAME]: perform_tooling_utility_checks, backend and all needed utilities persist.";
+    logger --id --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[${STR_NAME}]: perform_tooling_utility_checks, backend and all needed utilities persist.";
 
     return 0;
 }
 
 function print_help() {
-    logger --id --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[$STR_NAME]: help, func called.";
+    logger --id --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[${STR_NAME}]: help, func called.";
     echo "Name: S3 interaction suite";
     echo "Description: Read meta, download objects from or upload to S3-compatible storage";
     echo "Req: read-write access on current working directory, cURL v7.64 and higher.";
     echo "Note: for cURL v8.2 and lower. cURL 8.3+ can automatically generate signatures and sign data.";
-    echo "Usage $0 [options]";
+    echo "Usage ${0} [options]";
     echo -e "\t-b|--backend <backend-util> : set backend to perform http-session.";
     echo -e "\tAvailable variants:";
     echo -e "\t\t OLDCURL - cURL of version 8.2 and lower (used by default).";
@@ -526,28 +565,31 @@ function print_help() {
     echo -e "\t-o <target object name> : set desired object name to interact with, including s3-bucket. Ommit leading slash Example: bucket/path/to/object";
     echo -e "\t-l <target local file name> : (optional) set desired local file to interact with. Set as absolute path. Example: /absolute/path/to/file[.ext]. May be ommitted in GET request.";
     echo -e "\t-h|--help : call this help.";
-    echo -e "\tExample: $0 -b OLDCURL -r GET -f s3.storage.ru -a myaccesskeytos3 -s mysecretkeytos3 -o bucket/target/object/name"
+    echo -e "\tExample: ${0} -b OLDCURL -r GET -f s3.storage.ru -a myaccesskeytos3 -s mysecretkeytos3 -o bucket/target/object/name"
 }
 
 # Program start
 perform_basic_utility_checks;
 
-logger --id --rfc5424 --stderr --tag 'info' --priority 'user.info' -- "[$STR_NAME]: Start $0." 
-logger --id --rfc5424 --tag 'debug' --priority 'user.debug' -- "[$STR_NAME]: Arguments count: $#. Arguments: ($*).";
+logger --id --rfc5424 --stderr --tag 'info' --priority 'user.info' -- "[${STR_NAME}]: Start ${0}." 
+logger --id --rfc5424 --tag 'debug' --priority 'user.debug' -- "[${STR_NAME}]: Arguments count: ${#}. Arguments: (${*}).";
 
 # argument parsing
-if [ $# -eq 0 ]; then
-    logger --id --rfc5424 --stderr --tag 'info' --priority 'user.info' -- "[$STR_NAME]: Script called with $# arguments. Printing help and exit." 
+if [ ${#} -eq 0 ]; 
+then {
+    logger --id --rfc5424 --stderr --tag 'info' --priority 'user.info' -- "[${STR_NAME}]: Script called with ${#} arguments. Printing help and exit." 
     print_help;
-    logger --id --rfc5424 --stderr --tag 'info' --priority 'user.info' -- "[$STR_NAME]: $0 finished.";
+    logger --id --rfc5424 --stderr --tag 'info' --priority 'user.info' -- "[${STR_NAME}]: ${0} finished.";
     exit 0;
+}
 fi;
 #args_passed=$(getopt --name "$(basename "${0}")" --options "$STR_SHORT_O" --longoptions "$STR_LONG_O" -- "$@");  # not supported in GNU/getopts
 #eval set -- "$args_passed";  # not supported in GNU/getopts
 #logger --id --rfc5424 --tag 'debug' --priority 'user.debug' -- "[$STR_NAME]: Arguments parsed: ($args_passed).";  # not supported in GNU/getopts
 
 # agument processing
-while getopts "${STR_SHORT_O}" name; do
+while getopts "${STR_SHORT_O}" name; 
+do {
     case "$name" in
         'a')  # s3 bucket access key
              key_id="${OPTARG}";
@@ -587,15 +629,16 @@ while getopts "${STR_SHORT_O}" name; do
             break;
             ;;
         *)
-            logger --id --rfc5424 --stderr --tag 'error' --priority 'user.error' -- "[$STR_NAME]: $0 called with unexpected option. Print help and exit.";
-            echo "Unexpected option: $1";
+            logger --id --rfc5424 --stderr --tag 'error' --priority 'user.error' -- "[${STR_NAME}]: ${0} called with unexpected option. Print help and exit.";
+            echo "Unexpected option: ${1}";
             print_help;
-            logger --id --rfc5424 --stderr --tag 'info' --priority 'user.info' -- "[$STR_NAME]: $0 finished with error: Unexpected agrument: '$1'.";
+            logger --id --rfc5424 --stderr --tag 'info' --priority 'user.info' -- "[${STR_NAME}]: ${0} finished with error: Unexpected agrument: '${1}'.";
             exit 1;
             ;;
     esac;
+}
 done;
-logger --id --rfc5424 --tag 'debug' --priority 'user.debug' -- "[$STR_NAME]: Arguments: (backend:$backend; request:$req; fqdn:$fqdn; access-key:$key_id; secret-key:$key_s; object-name:$obj; local-path:$local_path).";
+logger --id --rfc5424 --tag 'debug' --priority 'user.debug' -- "[${STR_NAME}]: Arguments: (backend:${backend}; request:${req}; fqdn:${fqdn}; access-key:${key_id}; secret-key:${key_s}; object-name:${obj}; local-path:${local_path}).";
 
 perform_tooling_utility_checks "${backend}";
 
@@ -604,12 +647,12 @@ case "${req}" in
     'GET')
         case "${backend}" in
             'OLDCURL')
-                oldcurl_get_data_from_s3 "$fqdn" "$key_id" "$key_s" "$obj" "$local_path";
-                method_result=$?;
+                oldcurl_get_data_from_s3 "${fqdn}" "${key_id}" "${key_s}" "${obj}" "${local_path}";
+                method_result=${?};
                 ;;
             'CURL')
-                curl_get_data_from_s3 "$fqdn" "$key_id" "$key_s" "$sigstring" "$obj" "$local_path";
-                method_result=$?;
+                curl_get_data_from_s3 "${fqdn}" "${key_id}" "${key_s}" "${sigstring}" "${obj}" "${local_path}";
+                method_result=${?};
                 ;;
             'WGET')
                 echo'';
@@ -622,12 +665,12 @@ case "${req}" in
     'HEAD')
         case "${backend}" in
             'OLDCURL')
-                oldcurl_head_data_from_s3 "$fqdn" "$key_id" "$key_s" "$obj";
-                method_result=$?;
+                oldcurl_head_data_from_s3 "${fqdn}" "${key_id}" "${key_s}" "${obj}";
+                method_result=${?};
                 ;;
             'CURL')
-                curl_head_data_from_s3 "$fqdn" "$key_id" "$key_s" "$sigstring" "$obj";
-                method_result=$?;
+                curl_head_data_from_s3 "${fqdn}" "${key_id}" "${key_s}" "${sigstring}" "${obj}";
+                method_result=${?};
                 ;;
             'WGET')
                 echo'';
@@ -640,12 +683,12 @@ case "${req}" in
     'PUT')
         case "${backend}" in
             'OLDCURL')
-                oldcurl_put_data_to_s3 "$fqdn" "$key_id" "$key_s" "$obj" "$local_path";
-                method_result=$?;
+                oldcurl_put_data_to_s3 "${fqdn}" "${key_id}" "${key_s}" "${obj}" "${local_path}";
+                method_result=${?};
                 ;;
             'CURL')
-                curl_put_data_to_s3 "$fqdn" "$key_id" "$key_s" "$sigstring" "$obj" "$local_path";
-                method_result=$?;
+                curl_put_data_to_s3 "${fqdn}" "${key_id}" "${key_s}" "${sigstring}" "${obj}" "${local_path}";
+                method_result=${?};
                 ;;
             'WGET')
                 echo'';
@@ -656,19 +699,19 @@ case "${req}" in
         esac;
         ;;
     *)
-        logger --id --rfc5424 --stderr --tag 'error' --priority 'user.error' -- "[$STR_NAME]: $0 provided request method - ${req} - is incorrect. Aborting.";
+        logger --id --rfc5424 --stderr --tag 'error' --priority 'user.error' -- "[${STR_NAME}]: ${0} provided request method - ${req} - is incorrect. Aborting.";
         exit 1;
         ;;
 esac;
-logger --id --rfc5424 --tag 'debug' --priority 'user.debug' -- "[$STR_NAME]: subroutine return code: ${method_result}";
+logger --id --rfc5424 --tag 'debug' --priority 'user.debug' -- "[${{STR_NAME}}]: subroutine return code: ${method_result}";
 
 # process result
 if [ ${method_result} -eq 0 ]; then
-    logger --id --rfc5424 --stderr --tag 'info' --priority 'user.info' -- "[$STR_NAME]: Task executed successfully.";
-    logger --id --rfc5424 --stderr --tag 'info' --priority 'user.info' -- "[$STR_NAME]: $0 finished.";
+    logger --id --rfc5424 --stderr --tag 'info' --priority 'user.info' -- "[${{STR_NAME}}]: Task executed successfully.";
+    logger --id --rfc5424 --stderr --tag 'info' --priority 'user.info' -- "[${{STR_NAME}}]: ${0} finished.";
     exit 0;
 else
-    logger --id --rfc5424 --stderr --tag 'warning' --priority 'user.warning' -- "[$STR_NAME]: Error occured on task execution.";
-    logger --id --rfc5424 --stderr --tag 'info' --priority 'user.info' -- "[$STR_NAME]: $0 finished with error code 1.";
+    logger --id --rfc5424 --stderr --tag 'warning' --priority 'user.warning' -- "[${STR_NAME}]: Error occured on task execution.";
+    logger --id --rfc5424 --stderr --tag 'info' --priority 'user.info' -- "[${STR_NAME}]: ${0} finished with error code 1.";
     exit 1;
 fi;
