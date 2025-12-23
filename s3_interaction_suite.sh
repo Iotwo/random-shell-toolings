@@ -408,10 +408,10 @@ function perform_tooling_utility_checks() {
         'OLDCURL')
             logger --id --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[$STR_NAME]: perform_tooling_utility_checks, argument value is OLDCURL, cURL v8.2- choosen as backend.";
             logger --id --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[$STR_NAME]: perform_tooling_utility_checks, checking cURL v8.2- exists...";
-            exists="$(which 'curl';)";
+            exists="$(command -v 'curl';)";
             w_exc=$?;
             logger --id --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[$STR_NAME]: perform_tooling_utility_checks, unix.which returned:\"${exists}\" and exited with code - ${w_exc};";
-            if [ "${exists}" = "" ] || [ ${w_exc} -ne 0 ]; then
+            if [ -z "${exists}" ] || [ ${w_exc} -ne 0 ]; then
                 logger --id --rfc5424 --stderr --tag 'error' --priority 'local7.error' -- "[$STR_NAME]: perform_tooling_utility_checks, cURL v8.2- does not persist in the system. Aborting with error.";
                 exit 1;
             fi;
@@ -419,7 +419,8 @@ function perform_tooling_utility_checks() {
             current_curl_ver=$(curl --version | awk -F' ' '{print $2;}' | head -n 1;)
             logger --id --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[$STR_NAME]: perform_tooling_utility_checks, gathered cURL version is $current_curl_ver";
             #echo "$(echo -e "$FLOAT_OLD_CURL_MAX_VER\n$current_curl_ver" | sort -V | head -n1)"
-            if [ "$(printf '%s\n' "$FLOAT_OLD_CURL_MAX_VER" "$current_curl_ver" | sort --numeric-sort | head --lines 1)" = "$FLOAT_OLD_CURL_MAX_VER" ]; then 
+            exists=$(printf '%s\n' "$FLOAT_OLD_CURL_MAX_VER" "$current_curl_ver" | sort --numeric-sort | head --lines 1);  # current curl stored here now
+            if [ "${exists}" = "$FLOAT_OLD_CURL_MAX_VER" ]; then 
                 logger --id --rfc5424 --stderr --tag 'error' --priority 'local7.error' -- "[$STR_NAME]: perform_tooling_utility_checks, gathered cURL version is not supported by this backend option. Aborting.";
                 exit 1;
              else
