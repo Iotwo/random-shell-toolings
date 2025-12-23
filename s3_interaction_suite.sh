@@ -426,9 +426,9 @@ function perform_tooling_utility_checks() {
                 logger --id --rfc5424 --stderr --tag 'error' --priority 'local7.error' -- "[$STR_NAME]: perform_tooling_utility_checks, gathered cURL version is not supported by this backend option. Aborting.";
                 exit 1;
             }
-             else
+            else
                  logger --id --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[$STR_NAME]: perform_tooling_utility_checks, cURL v8.2- persists in the system. Checking the rest utilities.";
-             fi;
+            fi;
     
             for utility in "${old_curl_tools[@]}"
             do {
@@ -443,6 +443,7 @@ function perform_tooling_utility_checks() {
                 fi;
             }
             done;
+
             ;;
         'CURL') 
             logger --id --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[$STR_NAME]: perform_tooling_utility_checks, argument value is CURL, cURL v8.3+ choosen as backend.";
@@ -467,18 +468,36 @@ function perform_tooling_utility_checks() {
                 exit 1;
             }
             fi;
+
+            for utility in "${old_curl_tools[@]}"
+            do {
+                logger --id --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[$STR_NAME]: perform_tooling_utility_checks, checking utility \"${utility}\" exists.";
+                exists="$(which "$utility")";
+                w_exc=$?;
+                if [ "${exists}" = "" ] || [ ${w_exc} -ne 0 ]; then
+                    {
+                    logger --id --rfc5424 --stderr --tag 'error' --priority 'local7.error' -- "[$STR_NAME]: perform_tooling_utility_checks, utility \"${utility}\" is missing. Aborting.";
+                    exit 1;
+                }
+                fi;
+            }
+            done;
+
             ;;
         'WGET')
             logger --id --rfc5424 --stderr --tag 'error' --priority 'local7.error' -- "[$STR_NAME]: perform_tooling_utility_checks, usage of wget as backend is not implemented yet. Aborting.";
             exit 1;
+
             ;;
         'NETCAT')
             logger --id --rfc5424 --stderr --tag 'error' --priority 'local7.error' -- "[$STR_NAME]: perform_tooling_utility_checks, usage of netcat as backend is not implemented yet. Aborting.";
             exit 1;
+
             ;;
         *)
             logger --id --rfc5424 --stderr --tag 'error' --priority 'local7.error' -- "[$STR_NAME]: perform_tooling_utility_checks, Unsupported backend type. Aborting.";
             exit 1;
+            
             ;;
     esac;
     logger --id --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[$STR_NAME]: perform_tooling_utility_checks, backend and all needed utilities persist.";
