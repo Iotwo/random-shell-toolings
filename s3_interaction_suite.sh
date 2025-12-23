@@ -520,20 +520,20 @@ fi;
 # agument processing
 while getopts "${STR_SHORT_O}" name; do
     case "$name" in
-        '-a')  # s3 bucket access key
+        'a')  # s3 bucket access key
              key_id="${OPTARG}";
              ;;
-        '-b')  # used backend utility
+        'b')  # used backend utility
              backend="${OPTARG}";
              ;;
-        '-f')  # s3 FQDN
+        'f')  # s3 FQDN
              fqdn="${OPTARG}";
              ;;
-        '-h')  # call help
+        'h')  # call help
              print_help;
              exit 0;
              ;;
-        '-l')  # local file name to be used in interaction
+        'l')  # local file name to be used in interaction
              case "$2" in
                  "")
                     ;;
@@ -542,16 +542,16 @@ while getopts "${STR_SHORT_O}" name; do
                     ;;
              esac;
              ;;
-        '-o')  # target s3 object
+        'o')  # target s3 object
              obj="${OPTARG}";
              ;;
-        '-r')  # operation to perform with the object
+        'r')  # operation to perform with the object
              req="${OPTARG}";
              ;;
-        '-s') # s3 bucket secret key
+        's') # s3 bucket secret key
              key_s="${OPTARG}";
              ;;
-        '-t') # s3 signature string
+        'S') # s3 signature string
              sigstring="${OPTARG}";
              ;;
         '--')
