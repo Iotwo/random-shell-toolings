@@ -7,6 +7,30 @@
 # Note: for cURL v8.2 and lower. cURL 8.3+ can automatically generate signatures and sign data.
 # Note: to get object metadata (size, etc., user cURL option --head)
 
+
+# constants and variables declaration
+declare STR_NAME="$(basename "$0")";
+declare STR_SHORT_O=":b:,r:,f:,t:,a:,s:,o:,l:,h";
+#declare STR_LONG_O="backend:,request:,s3-fqdn:,sig-string:,access-key:,secret-key:,object-name:,local-file:,help";
+declare args_passed="";
+
+declare backend='OLDCURL';
+declare req='';
+declare fqdn='';
+declare sigstring='aws:amz:ru-central1:s3';
+declare key_id='';
+declare key_s='';
+declare obj='';
+declare local_path='';
+
+declare dt_val='';  # used as global var in all three methods
+declare str_to_sign='';  # used as global var in all three methods
+declare signature='';  # used as global var in all three methods
+
+declare -i method_result=-1;
+
+# functions declaration
+
 perform_basic_utility_checks() {
     ############################################################
     # DESCR: Check that all base utilities needed for
@@ -32,30 +56,7 @@ perform_basic_utility_checks() {
 
     return 0;
 }
-perform_basic_utility_checks;
 
-# constants and variables declaration
-declare STR_NAME="$(basename "$0")";
-declare STR_SHORT_O=":b:,r:,f:,t:,a:,s:,o:,l:,h";
-#declare STR_LONG_O="backend:,request:,s3-fqdn:,sig-string:,access-key:,secret-key:,object-name:,local-file:,help";
-declare args_passed="";
-
-declare backend='OLDCURL';
-declare req='';
-declare fqdn='';
-declare sigstring='aws:amz:ru-central1:s3';
-declare key_id='';
-declare key_s='';
-declare obj='';
-declare local_path='';
-
-declare dt_val='';  # used as global var in all three methods
-declare str_to_sign='';  # used as global var in all three methods
-declare signature='';  # used as global var in all three methods
-
-declare -i method_result=-1;
-
-# functions declaration
 oldcurl_get_data_from_s3() {
 
     ############################################################
@@ -495,6 +496,8 @@ print_help() {
     echo -e "\tExample: $0 -b OLDCURL -r GET -f s3.storage.ru -a myaccesskeytos3 -s mysecretkeytos3 -o bucket/target/object/name"
 }
 
+# Program start
+perform_basic_utility_checks;
 
 logger --id --rfc5424 --stderr --tag 'info' --priority 'user.info' -- "[$STR_NAME]: Start $0." 
 logger --id --rfc5424 --tag 'debug' --priority 'user.debug' -- "[$STR_NAME]: Arguments count: $#. Arguments: ($*).";
