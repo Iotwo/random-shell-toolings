@@ -45,8 +45,8 @@ function perform_basic_utility_checks() {
     for utility in "${tools[@]}"
     
     do {
-        exists="$(command -v "$utility")";
-        w_exc=$?;
+        exists="$(command -v "${utility}")";
+        w_exc=${?};
 
         if [ -z "${exists}" ] || [ ${w_exc} -ne 0 ]; then {
             echo "Cannot start script ${0}, utility \"${utility}\" is missing!";
@@ -487,14 +487,15 @@ function print_help() {
     echo -e "\tAvailable variants:";
     echo -e "\t\t OLDCURL - cURL of version 8.2 and lower (used by default).";
     echo -e "\t\t CURL - cURL of version 8.3 and higher.";
-    echo -e "\t\t WGET - wget utility.";
-    echo -e "\t\t NETCAT - netcat utility.";
-    echo -e "\t-r|--request <REQUEST> : set operation type to perform with s3-storage. Available variants: GET , HEAD, PUT.";
-    echo -e "\t-f|--s3-fqdn <FQDN> : set S3-compatible storage fully-qualified domain name.";
-    echo -e "\t-a|--access-key <your access key> : set S3 connection access key";
-    echo -e "\t-s|--secret-key <your secret key> : set S3 connection secret key";
-    echo -e "\t-o|--object-name <target object name> : set desired object name to interact with, including s3-bucket. Ommit leading slash Example: bucket/path/to/object";
-    echo -e "\t-l|--local-file <target local file name> : set desired local file to interact with. Set as absolute path. Example: /absolute/path/to/file[.ext]. May be ommitted in GET request.";
+    echo -e "\t\t WGET - wget utility (currently not supported).";
+    echo -e "\t\t NETCAT - netcat utility (currently not supported).";
+    echo -e "\t-r <REQUEST> : set operation type to perform with s3-storage. Available variants: GET, HEAD, PUT.";
+    echo -e "\t-f <FQDN> : set S3-compatible storage fully-qualified domain name.";
+    echo -e "\t-a <your S3 access key> : set S3 connection access key";
+    echo -e "\t-s <your S3 secret key> : set S3 connection secret key";
+    echo -e "\t-S <S3 signature> : (optional) set S3 connection signature string";
+    echo -e "\t-o <target object name> : set desired object name to interact with, including s3-bucket. Ommit leading slash Example: bucket/path/to/object";
+    echo -e "\t-l <target local file name> : (optional) set desired local file to interact with. Set as absolute path. Example: /absolute/path/to/file[.ext]. May be ommitted in GET request.";
     echo -e "\t-h|--help : call this help.";
     echo -e "\tExample: $0 -b OLDCURL -r GET -f s3.storage.ru -a myaccesskeytos3 -s mysecretkeytos3 -o bucket/target/object/name"
 }
