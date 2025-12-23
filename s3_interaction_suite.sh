@@ -31,7 +31,7 @@ declare -i method_result=-1;
 
 # functions declaration
 
-perform_basic_utility_checks() {
+function perform_basic_utility_checks() {
     ############################################################
     # DESCR: Check that all base utilities needed for
     #        supporting the program is available
@@ -48,7 +48,7 @@ perform_basic_utility_checks() {
         exists="$(which "$utility")";
         w_exc=$?;
 
-        if [ "${exists}" = "" ] || [ ${w_exc} -ne 0 ]; then
+        if [ [ -z "${exists}" ] -o [ ${w_exc} -ne 0 ] ]; then
             echo "Cannot start script ${0}, utility \"${utility}\" is missing!";
             exit 1;
         fi;
@@ -57,7 +57,7 @@ perform_basic_utility_checks() {
     return 0;
 }
 
-oldcurl_get_data_from_s3() {
+function oldcurl_get_data_from_s3() {
 
     ############################################################
     # DESCR: Perform HTTP GET on S3, and saves result locally
@@ -115,7 +115,7 @@ oldcurl_get_data_from_s3() {
     fi;
 }
 
-oldcurl_head_data_from_s3() {
+function oldcurl_head_data_from_s3() {
 
     ############################################################
     # DESCR: Perform HTTP HEAD on S3
@@ -164,7 +164,7 @@ oldcurl_head_data_from_s3() {
     fi;
 }
 
-oldcurl_put_data_to_s3() {
+function oldcurl_put_data_to_s3() {
 
     ############################################################
     # DESCR: Perform HTTP PUT on S3, and saves result locally
@@ -219,7 +219,7 @@ oldcurl_put_data_to_s3() {
     fi;
 }
 
-curl_get_data_from_s3() {
+function curl_get_data_from_s3() {
 
     ############################################################
     # DESCR: Perform HTTP GET on S3, and saves result locally
@@ -272,7 +272,7 @@ curl_get_data_from_s3() {
     fi;
 }
 
-curl_head_data_from_s3() {
+function curl_head_data_from_s3() {
 
     ############################################################
     # DESCR: Perform HTTP GET on S3, and saves result locally
@@ -315,7 +315,7 @@ curl_head_data_from_s3() {
     fi;
 }
 
-curl_put_data_to_s3() {
+function curl_put_data_to_s3() {
     ############################################################
     # DESCR: Perform HTTP PUT on S3, and saves result locally
     # ARGS:
@@ -365,15 +365,15 @@ curl_put_data_to_s3() {
     fi;
 }
 
-wget_get_data_from_s3() {
+function wget_get_data_from_s3() {
     return 0; #wget --verbose --server-response --header "Date: ${dt_val}" --header 'Content-Type: application/octet-stream' --header "Authorization: AWS ${a_k}:${signature}" "https://${host}/${bucket}/${object}"
 }
 
-wget_put_data_to_s3() {
+function wget_put_data_to_s3() {
     return 0;
 }
 
-perform_access_checks() {
+function perform_access_checks() {
 	############################################################
 	# DESCR: Checks if target directory or target uploaded file
 	#        is accessible for read/write operations
@@ -382,7 +382,7 @@ perform_access_checks() {
     return 0;
 }
 
-perform_tooling_utility_checks() {
+function perform_tooling_utility_checks() {
     ############################################################
     # DESCR: Check that all needed tooling is available and all
     #        needed permissions are granted
@@ -473,7 +473,7 @@ perform_tooling_utility_checks() {
     return 0;
 }
 
-print_help() {
+function print_help() {
     logger --id --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[$STR_NAME]: help, func called.";
     echo "Name: S3 interaction suite";
     echo "Description: Read meta, download objects from or upload to S3-compatible storage";
