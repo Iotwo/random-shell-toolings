@@ -3,9 +3,8 @@
 ####
 # Name: S3 interaction suite
 # Description: Read meta, download objects from or upload to S3-compatible storage
-# Req: read-write access on current working directory, cURL v7.64 and higher.
-# Note: for cURL v8.2 and lower. cURL 8.3+ can automatically generate signatures and sign data.
-# Note: to get object metadata (size, etc., user cURL option --head)
+# Req: read-write access on current working directory, 
+#      cURL v7.64 and higher / wget / netcat - depends on choosen backend
 
 
 # constants and variables declaration
