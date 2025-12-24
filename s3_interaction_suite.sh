@@ -10,7 +10,7 @@
 
 # constants and variables declaration
 declare STR_NAME="$(basename "${0}")";
-declare STR_SHORT_O=":b:,r:,f:,t:,a:,s:,o:,l:,h";
+declare STR_SHORT_O=":b:,r:,f:,S:,a:,s:,o:,l:,h";
 #declare STR_LONG_O="backend:,request:,s3-fqdn:,sig-string:,access-key:,secret-key:,object-name:,local-file:,help";  # not supported in GNU/getopts
 declare args_passed="";
 
