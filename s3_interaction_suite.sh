@@ -593,6 +593,20 @@ function perform_tooling_utility_checks() {
             }
             fi;
 
+            for utility in "${old_curl_tools[@]}"
+            do {
+                logger --id --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[${STR_NAME}]: perform_tooling_utility_checks, checking utility \"${utility}\" exists.";
+                exists="$(command -v "${utility}")";
+                w_exc=$?;
+                if [ "${exists}" = "" ] || [ ${w_exc} -ne 0 ]; then
+                    {
+                    logger --id --rfc5424 --stderr --tag 'error' --priority 'local7.error' -- "[${STR_NAME}]: perform_tooling_utility_checks, utility \"${utility}\" is missing. Aborting.";
+                    exit 1;
+                }
+                fi;
+            }
+            done;
+
             ;;
         'NETCAT')
             logger --id --rfc5424 --stderr --tag 'error' --priority 'local7.error' -- "[${STR_NAME}]: perform_tooling_utility_checks, usage of netcat as backend is not implemented yet. Aborting.";
