@@ -166,6 +166,7 @@ function oldcurl_head_data_from_s3() {
     elif [ "${response_code}" == "404" ]; 
     then {
         logger --id --rfc5424 --stderr --tag 'info' --priority 'local7.info' -- "[$STR_NAME]: oldcurl_head_data_from_s3, Response code: ${response_code}. Requested object is missing on the resource.";
+        logger --id --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[$STR_NAME]: oldcurl_head_data_from_s3, Function exited with code 0.";
         return 0;
     }
     else {
@@ -337,6 +338,7 @@ function curl_head_data_from_s3() {
     elif [ "${response_code}" == "404" ]; 
     then {
         logger --id --rfc5424 --stderr --tag 'info' --priority 'local7.info' -- "[${STR_NAME}]: curl_head_data_from_s3, Response code: ${response_code}. Requested object is missing on the resource.";
+        logger --id --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[${STR_NAME}]: curl_head_data_from_s3, Function exited with code 0.";
         return 0;
     }
     else {
