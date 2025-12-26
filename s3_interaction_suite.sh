@@ -808,7 +808,8 @@ case "${req}" in
                 method_result=${?};
                 ;;
             'WGET')
-                echo'';
+                wget_head_data_from_s3 "${fqdn}" "${key_id}" "${key_s}" "${obj}";
+                method_result=${?};
                 ;;
             'NETCAT')
                 echo'';
