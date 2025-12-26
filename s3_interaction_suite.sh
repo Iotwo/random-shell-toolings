@@ -451,7 +451,7 @@ function wget_get_data_from_s3() {
                             --header="Authorization: AWS ${2}:${signature}" "https://${1}/${4}" \
                             --output-document="${5}" \
                         2>&1 |\
-                        awk -F' ' '/HTTP\/[0-9.]+/{print $2}';
+                        awk -F' ' '/HTTP\/[0-9.]+/{print $2}';)"
     }
     fi;
 
@@ -506,7 +506,7 @@ function perform_tooling_utility_checks() {
             logger --id --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[${STR_NAME}]: perform_tooling_utility_checks, checking cURL v8.2- exists...";
             exists="$(command -v 'curl';)";
             w_exc=$?;
-            logger --id --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[${STR_NAME}]: perform_tooling_utility_checks, unix.which returned:\"${exists}\" and exited with code - ${w_exc};";
+            logger --id --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[${STR_NAME}]: perform_tooling_utility_checks, bash.which returned:\"${exists}\" and exited with code - ${w_exc};";
             if [ -z "${exists}" ] || [ ${w_exc} -ne 0 ]; 
             then {
                 logger --id --rfc5424 --stderr --tag 'error' --priority 'local7.error' -- "[${STR_NAME}]: perform_tooling_utility_checks, cURL v8.2- does not persist in the system. Aborting with error.";
@@ -546,7 +546,7 @@ function perform_tooling_utility_checks() {
             logger --id --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[${STR_NAME}]: perform_tooling_utility_checks, checking cURL v8.3+ exists...";
             exists="$(command -v 'curl';)";
             w_exc=$?;
-            logger --id --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[${STR_NAME}]: perform_tooling_utility_checks, unix.which returned:\"${exists}\" and exited with code - ${w_exc};";
+            logger --id --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[${STR_NAME}]: perform_tooling_utility_checks, bash.which returned:\"${exists}\" and exited with code - ${w_exc};";
             if [ -z "${exists}" ] || [ ${w_exc} -ne 0 ]; 
             then {
                 logger --id --rfc5424 --stderr --tag 'error' --priority 'local7.error' -- "[${STR_NAME}]: perform_tooling_utility_checks, cURL v8.3+ does not persist in the system. Aborting with error.";
@@ -581,8 +581,17 @@ function perform_tooling_utility_checks() {
 
             ;;
         'WGET')
-            logger --id --rfc5424 --stderr --tag 'error' --priority 'local7.error' -- "[${STR_NAME}]: perform_tooling_utility_checks, usage of wget as backend is not implemented yet. Aborting.";
-            exit 1;
+            logger --id --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[${STR_NAME}]: perform_tooling_utility_checks, argument value is WGET, GNU/wget choosen as backend.";
+            logger --id --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[${STR_NAME}]: perform_tooling_utility_checks, checking GNU/wget exists...";
+            exists="$(command -v 'wget';)";
+            w_exc=$?;
+            logger --id --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[${STR_NAME}]: perform_tooling_utility_checks, bash.which returned:\"${exists}\" and exited with code - ${w_exc};";
+            if [ -z "${exists}" ] || [ ${w_exc} -ne 0 ]; 
+            then {
+                logger --id --rfc5424 --stderr --tag 'error' --priority 'local7.error' -- "[${STR_NAME}]: perform_tooling_utility_checks, GNU/wget does not persist in the system. Aborting with error.";
+                exit 1;
+            }
+            fi;
 
             ;;
         'NETCAT')
@@ -709,7 +718,8 @@ case "${req}" in
                 method_result=${?};
                 ;;
             'WGET')
-                echo'';
+                wget_get_data_from_s3 "${fqdn}" "${key_id}" "${key_s}" "${obj}" "${local_path}";
+                method_result=${?};
                 ;;
             'NETCAT')
                 echo'';
