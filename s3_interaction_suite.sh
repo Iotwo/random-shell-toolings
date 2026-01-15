@@ -437,7 +437,8 @@ function wget_get_data_from_s3() {
                             --method='GET' \
                             --header="Date: ${dt_val}" \
                             --header='Content-Type: application/octet-stream' \
-                            --header="Authorization: AWS ${2}:${signature}" "https://${1}/${4}" \
+                            --header="Authorization: AWS ${2}:${signature}" \
+                            "https://${1}/${4}" \
                         2>&1 |\
                         awk -F' ' '/HTTP\/[0-9.]+/{print $2}';)";
     }
@@ -450,8 +451,9 @@ function wget_get_data_from_s3() {
                             --method='GET' \
                             --header="Date: ${dt_val}" \
                             --header='Content-Type: application/octet-stream' \
-                            --header="Authorization: AWS ${2}:${signature}" "https://${1}/${4}" \
+                            --header="Authorization: AWS ${2}:${signature}" \
                             --output-document="${5}" \
+                            "https://${1}/${4}" \
                         2>&1 |\
                         awk -F' ' '/HTTP\/[0-9.]+/{print $2}';)";
     }
@@ -500,7 +502,8 @@ function wget_head_data_from_s3() {
                         --method='HEAD' \
                         --header="Date: ${dt_val}" \
                         --header='Content-Type: application/octet-stream' \
-                        --header="Authorization: AWS ${2}:${signature}" "https://${1}/${4}" \
+                        --header="Authorization: AWS ${2}:${signature}" \
+                        "https://${1}/${4}" \
                     2>&1 |\
                     awk -F' ' '/HTTP\/[0-9.]+/{print $2}';)";
 
@@ -577,8 +580,9 @@ function wget_put_data_to_s3() {
                         --header="Date: ${dt_val}" \
                         --header='Content-Type: application/octet-stream' \
                         --header="Contetn-Length: $(wc --bytes < "${5}")" \
-                        --header="Authorization: AWS ${2}:${signature}" "https://${1}/${4}" \
-                        --body-file="${5}" ;)";
+                        --header="Authorization: AWS ${2}:${signature}" \
+                        --body-file="${5}" \
+                        "https://${1}/${4}";)";
 
     if [ "${response_code}" == "200" ]; 
     then {
