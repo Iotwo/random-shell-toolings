@@ -565,7 +565,7 @@ function wget_put_data_to_s3() {
     signature="$(echo -en "${str_to_sign}" | openssl sha1 -hmac "${3}" -binary | base64)";
 
     response_code="$(wget \
-                        --quiet \
+                        --debug \
                         --spider \
                         --no-check-certificate \
                         --no-http-keep-alive \
