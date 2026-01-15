@@ -573,7 +573,6 @@ function wget_put_data_to_s3() {
     response_code="$(wget \
                         --debug \
                         --no-check-certificate \
-                        --no-http-keep-alive \
                         --server-response \
                         --method='PUT' \
                         --header="Date: ${dt_val}" \
