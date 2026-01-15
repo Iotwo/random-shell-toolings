@@ -889,7 +889,8 @@ case "${req}" in
                 method_result=${?};
                 ;;
             'WGET')
-                echo'';
+                wget_put_data_to_s3 "${fqdn}" "${key_id}" "${key_s}" "${obj}" "${local_path}";
+                method_result=${?};
                 ;;
             'NETCAT')
                 echo'';
