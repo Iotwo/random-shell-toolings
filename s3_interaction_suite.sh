@@ -538,7 +538,6 @@ function wget_put_data_to_s3() {
     #    (3) - Secret key
     #    (4) - Object name (with bucket)
     #    (5) - Local file name 
-    # 
     ############################################################
 
     logger --id --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[${STR_NAME}]: wget_put_data_to_s3, func called with args(${#}): [${*}].";
