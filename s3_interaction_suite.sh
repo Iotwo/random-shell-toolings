@@ -535,6 +535,9 @@ function wget_put_data_to_s3() {
     #    (3) - Secret key
     #    (4) - Object name (with bucket)
     #    (5) - Local file name 
+    # \
+    #                2>&1 |\
+    #                awk -F' ' '/HTTP\/[0-9.]+/{print $2}'
     ############################################################
 
     logger --id --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[${STR_NAME}]: wget_put_data_to_s3, func called with args(${#}): [${*}].";
@@ -574,9 +577,7 @@ function wget_put_data_to_s3() {
                         --header="Date: ${dt_val}" \
                         --header='Content-Type: application/octet-stream' \
                         --header="Authorization: AWS ${2}:${signature}" "https://${1}/${4}" \
-                        --body-file="${5}" \
-                    2>&1 |\
-                    awk -F' ' '/HTTP\/[0-9.]+/{print $2}';)";
+                        --body-file="${5}" ;)";
 
     if [ "${response_code}" == "200" ]; 
     then {
