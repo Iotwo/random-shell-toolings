@@ -572,7 +572,6 @@ function wget_put_data_to_s3() {
 
     response_code="$(wget \
                         --debug \
-                        --spider \
                         --no-check-certificate \
                         --no-http-keep-alive \
                         --server-response \
