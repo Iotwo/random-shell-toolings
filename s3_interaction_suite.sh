@@ -576,6 +576,7 @@ function wget_put_data_to_s3() {
                         --method='PUT' \
                         --header="Date: ${dt_val}" \
                         --header='Content-Type: application/octet-stream' \
+                        --header="Contetn-Length: $(wc --bytes < "${5}")" \
                         --header="Authorization: AWS ${2}:${signature}" "https://${1}/${4}" \
                         --body-file="${5}" ;)";
 
@@ -614,7 +615,7 @@ function perform_tooling_utility_checks() {
     declare FLOAT_OLD_CURL_MAX_VER='8.2.1';
 
     declare -a old_curl_tools=( 'base64' 'date' 'openssl' );
-    declare -a wget_tools=( 'base64' 'date' 'openssl' );
+    declare -a wget_tools=( 'base64' 'date' 'openssl' 'wc' );
     declare -a netcat_tools=();
     declare current_curl_ver='';
     declare exists='';
