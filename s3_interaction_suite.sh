@@ -866,7 +866,7 @@ case "${req}" in
                 method_result=${?};
                 ;;
             'NETCAT')
-                echo'';
+                echo 'NOT IMPLEMENTED YET!';
                 ;;
         esac;
         ;;
@@ -885,7 +885,7 @@ case "${req}" in
                 method_result=${?};
                 ;;
             'NETCAT')
-                echo'';
+                echo 'NOT IMPLEMENTED YET!';
                 ;;
         esac;
         ;;
@@ -904,7 +904,7 @@ case "${req}" in
                 method_result=${?};
                 ;;
             'NETCAT')
-                echo'';
+                echo 'NOT IMPLEMENTED YET!';
                 ;;
         esac;
         ;;
