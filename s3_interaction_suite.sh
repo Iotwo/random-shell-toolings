@@ -624,9 +624,9 @@ function netcat_get_data_from_s3() {
         query_line="GET /${4} HTTP/1.1";
         header_host="Host: ${1}";
         header_date="Date: ${dt_val}";
-        header_authorization="Authorization: AWS ${2}:${signature}"
+        header_authorization="Authorization: AWS ${2}:${signature}";
         
-        response_code="$(echo -en "${query_line}\n${header_host}\n${header_date}\n${header_content_type}\n${header_authorization}" |\
+        response_code="$(echo -en "${query_line}\n${header_host}\n${header_date}\n${header_content_type}\n${header_authorization}\n" |\
                          netcat -v "${1}" 443;)";
     }
     else {
