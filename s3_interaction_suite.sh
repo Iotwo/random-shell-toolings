@@ -614,6 +614,8 @@ function netcat_get_data_from_s3() {
     declare header_content_type="Content-Type: application/octet-stream";
     declare header_date="";
     declare header_authorization="";
+    declare header_accept="Accept: */*";
+    declare header_user_agent=""
 
     dt_val="$(date -R)";
     str_to_sign="GET\n\napplication/octet-stream\n${dt_val}\n/${4}";
@@ -627,7 +629,7 @@ function netcat_get_data_from_s3() {
         header_authorization="Authorization: AWS ${2}:${signature}";
         
         response_code="$(echo -en "${query_line}\n${header_host}\n${header_date}\n${header_content_type}\n${header_authorization}\n" |\
-                         netcat -v "${1}" 443;)";
+                         netcat -v -v "${1}" 443;)";
     }
     else {
         response_code="$()";
