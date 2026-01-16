@@ -595,7 +595,57 @@ function wget_put_data_to_s3() {
     fi;
 }
 
-function netcat_get_data_from_s3() {}
+function netcat_get_data_from_s3() {
+    ############################################################
+    # DESCR: Perform HTTP GET on S3, and saves result locally
+    # ARGS:
+    #    (1) - S3 FQDN
+    #    (2) - Access key ID
+    #    (3) - Secret key
+    #    (4) - Object name (with bucket)
+    #    (5) - Local file name (optional)
+    ############################################################
+
+    logger --id --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[${STR_NAME}]: netcat_get_data_from_s3, func called with args(${#}): [${*}].";
+    # dt_val, signature, str_to_sign - variables from global scope
+    declare response_code="";
+    declare query_line=""
+    declare header_host="";
+    declare header_content_type="Content-Type: application/octet-stream";
+    declare header_date="";
+    declare header_authorization="";
+
+    dt_val="$(date -R)";
+    str_to_sign="GET\n\napplication/octet-stream\n${dt_val}\n/${4}";
+    signature="$(echo -en "${str_to_sign}" | openssl sha1 -hmac "${3}" -binary | base64 -)";
+
+    if [ -z "${5}" ];
+    then {
+        query_line="GET /${4} HTTP/1.1";
+        header_host="Host: ${1}";
+        header_date="Date: ${dt_val}";
+        header_authorization="Authorization: AWS ${2}:${signature}"
+        
+        response_code="$(echo -en "${query_line}\n${header_host}\n${header_date}\n${header_content_type}\n${header_authorization}" |\
+                         netcat -v "${1}" 443;)";
+    }
+    else {
+        response_code="$()";
+    }
+    fi;
+
+    if [ "${response_code}" == "200" ]; 
+    then {
+        logger --id --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[${STR_NAME}]: netcat_get_data_from_s3, Response code: ${response_code}. Request executed successfully.";
+        logger --id --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[${STR_NAME}]: netcat_get_data_from_s3, Function exited with code 0.";
+        return 0;
+    }
+    else {
+        logger --id --rfc5424 --stderr --tag 'warning' --priority 'local7.warning' -- "[${STR_NAME}]: netcat_get_data_from_s3,  Response code: ${response_code}. Something went wrong.";
+        return 1;
+    }
+    fi;
+}
 
 function netcat_head_data_from_s3() {}
 
