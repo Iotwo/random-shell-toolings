@@ -647,9 +647,13 @@ function netcat_get_data_from_s3() {
     fi;
 }
 
-function netcat_head_data_from_s3() {}
+function netcat_head_data_from_s3() {
+    return 1;
+}
 
-function netcat_put_data_to_s3() {}
+function netcat_put_data_to_s3() {
+    return 1;
+}
 
 function perform_access_checks() {
 	############################################################
