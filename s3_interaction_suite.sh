@@ -595,6 +595,12 @@ function wget_put_data_to_s3() {
     fi;
 }
 
+function netcat_get_data_from_s3() {}
+
+function netcat_head_data_from_s3() {}
+
+function netcat_put_data_to_s3() {}
+
 function perform_access_checks() {
 	############################################################
 	# DESCR: Checks if target directory or target uploaded file
