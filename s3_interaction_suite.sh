@@ -627,7 +627,7 @@ function openssl_get_data_from_s3() {
     header_date="Date: ${dt_val}";
     header_authorization="Authorization: AWS ${2}:${signature}";
         
-    response_code="$(echo -en "${query_line}\n${header_host}\n${header_date}\n${header_content_type}\n${header_authorization}\n" |\
+    response_code="$(echo -en "${query_line}\n${header_host}\n${header_date}\n${header_content_type}\n${header_authorization}\n\n" |\
                      openssl s_client \
                         -quiet \
                         -connect "${1}:443" \
@@ -727,7 +727,7 @@ function netcat_get_data_from_s3() {
         header_date="Date: ${dt_val}";
         header_authorization="Authorization: AWS ${2}:${signature}";
         
-        response_code="$(echo -en "${query_line}\n${header_host}\n${header_date}\n${header_content_type}\n${header_authorization}\n" |\
+        response_code="$(echo -en "${query_line}\n${header_host}\n${header_date}\n${header_content_type}\n${header_authorization}\n\n" |\
                          netcat -v -v "${1}" 443;)";
     }
     else {
