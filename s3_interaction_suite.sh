@@ -1114,7 +1114,8 @@ case "${req}" in
                 method_result=${?};
                 ;;
             'NETCAT')
-                echo 'NOT IMPLEMENTED YET!';
+                netcat_head_data_from_s3 "${fqdn}" "${key_id}" "${key_s}" "${obj}";
+                method_result=${?};
                 ;;
         esac;
         ;;
@@ -1137,7 +1138,8 @@ case "${req}" in
                 method_result=${?};
                 ;;
             'NETCAT')
-                echo 'NOT IMPLEMENTED YET!';
+                netcat_put_data_to_s3 "${fqdn}" "${key_id}" "${key_s}" "${obj}" "${local_path}";
+                method_result=${?};
                 ;;
         esac;
         ;;
