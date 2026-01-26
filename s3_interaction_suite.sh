@@ -611,6 +611,22 @@ function openssl_get_data_from_s3() {
     # dt_val, signature, str_to_sign - variables from global scope
     declare response_code="";
 
+    dt_val="$(date -R)";
+    str_to_sign="GET\n\napplication/octet-stream\n${dt_val}\n/${4}";
+    signature="$(echo -en "${str_to_sign}" | openssl sha1 -hmac "${3}" -binary | base64 -)";
+
+    query_line = "GET /${4} HTTP/1.1";
+    header_host="Host: ${1}";
+    header_date="Date: ${dt_val}";
+    header_authorization="Authorization: AWS ${2}:${signature}";
+        
+    response_code="$(echo -en "${query_line}\n${header_host}\n${header_date}\n${header_content_type}\n${header_authorization}\n" |\
+                     openssl s_client\
+                        -quiet \
+                        -connect "${1}:443" \
+                        -server "${1}";)";
+    echo "${response_code}";
+
     return 0;
 }
 
