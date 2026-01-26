@@ -607,6 +607,7 @@ function netcat_get_data_from_s3() {
     ############################################################
 
     logger --id --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[${STR_NAME}]: netcat_get_data_from_s3, func called with args(${#}): [${*}].";
+    logger --id --rfc5424 --tag 'warning' --stderr --priority 'local7.warning' -- "[${STR_NAME}]: netcat_get_data_from_s3, this method can only implement bare HTTP, no security supported.";
     # dt_val, signature, str_to_sign - variables from global scope
     declare response_code="";
     declare query_line=""
@@ -650,10 +651,58 @@ function netcat_get_data_from_s3() {
 }
 
 function netcat_head_data_from_s3() {
+
+    ############################################################
+    # DESCR: Perform HTTP HEAD on S3
+    # ARGS:
+    #    (1) - S3 FQDN
+    #    (2) - Access key ID
+    #    (3) - Secret key
+    #    (4) - Object name (with bucket)
+    ############################################################
+
+    logger --id --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[${STR_NAME}]: netcat_head_data_from_s3, func called with args(${#}): [${*}].";
+    logger --id --rfc5424 --tag 'warning' --stderr --priority 'local7.warning' -- "[${STR_NAME}]: netcat_head_data_from_s3, this method can only implement bare HTTP, no security supported.";
+
     return 1;
 }
 
 function netcat_put_data_to_s3() {
+
+    ############################################################
+    # DESCR: Perform HTTP PUT on S3, and saves result locally
+    # ARGS:
+    #    (1) - S3 FQDN
+    #    (2) - Access key ID
+    #    (3) - Secret key
+    #    (4) - Object name (with bucket)
+    #    (5) - Local file name 
+    ############################################################
+
+    logger --id --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[${STR_NAME}]: netcat_put_data_to_s3, func called with args(${#}): [${*}].";
+    logger --id --rfc5424 --tag 'warning' --stderr --priority 'local7.warning' -- "[${STR_NAME}]: netcat_put_data_to_s3, this method can only implement bare HTTP, no security supported.";
+
+    declare response_code='';
+
+    if [ -z "${5}" ]; 
+    then {
+        logger --id --rfc5424 --stderr --tag 'error' --priority 'local7.error' -- "[${STR_NAME}]: wget_put_data_to_s3, file name not set: \'${5}\'.";
+        return 1;
+    }
+    fi;
+    if [ ! -f "${5}" ]; 
+    then {
+        logger --id --rfc5424 --stderr --tag 'error' --priority 'local7.error' -- "[${STR_NAME}]: wget_put_data_to_s3, file \'${5}\' does not exist!";
+        return 1; 
+    }
+    fi;
+    if [ ! -r "${5}" ]; 
+    then {
+        logger --id --rfc5424 --stderr --tag 'error' --priority 'local7.error' -- "[${STR_NAME}]: wget_put_data_to_s3, file \'${5}\' is not readable!";
+        return 1;
+    }
+    fi;
+
     return 1;
 }
 
