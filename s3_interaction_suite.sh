@@ -852,7 +852,7 @@ function print_help() {
     echo -e "\t-S <S3 signature> : (optional) set S3 connection signature string";
     echo -e "\t-o <target object name> : set desired object name to interact with, including s3-bucket. Ommit leading slash Example: bucket/path/to/object";
     echo -e "\t-l <target local file name> : (optional) set desired local file to interact with. Set as absolute path. Example: /absolute/path/to/file[.ext]. May be ommitted in GET request.";
-    echo -e "\t-h|--help : call this help.";
+    echo -e "\t-h : call this help.";
     echo -e "\tExample: ${0} -b OLDCURL -r GET -f s3.storage.ru -a myaccesskeytos3 -s mysecretkeytos3 -o bucket/target/object/name";
     echo -e "\tExample: ${0} -b WGET -r PUT -f s3.storage.ru -a myaccesskeytos3 -s mysecretkeytos3 -o bucket/target/object/name -l /path/to/upload/file";
 }
