@@ -1085,6 +1085,10 @@ case "${req}" in
                 wget_get_data_from_s3 "${fqdn}" "${key_id}" "${key_s}" "${obj}" "${local_path}";
                 method_result=${?};
                 ;;
+            'OPENSSL')
+                openssl_get_data_from_s3 "${fqdn}" "${key_id}" "${key_s}" "${obj}" "${local_path}";
+                method_result=${?};
+                ;;
             'NETCAT')
                 netcat_get_data_from_s3 "${fqdn}" "${key_id}" "${key_s}" "${obj}" "${local_path}";
                 method_result=${?};
@@ -1105,6 +1109,10 @@ case "${req}" in
                 wget_head_data_from_s3 "${fqdn}" "${key_id}" "${key_s}" "${obj}";
                 method_result=${?};
                 ;;
+            'OPENSSL')
+                openssl_руфв_data_from_s3 "${fqdn}" "${key_id}" "${key_s}" "${obj}";
+                method_result=${?};
+                ;;
             'NETCAT')
                 echo 'NOT IMPLEMENTED YET!';
                 ;;
@@ -1122,6 +1130,10 @@ case "${req}" in
                 ;;
             'WGET')
                 wget_put_data_to_s3 "${fqdn}" "${key_id}" "${key_s}" "${obj}" "${local_path}";
+                method_result=${?};
+                ;;
+            'OPENSSL')
+                openssl_put_data_to_s3 "${fqdn}" "${key_id}" "${key_s}" "${obj}" "${local_path}";
                 method_result=${?};
                 ;;
             'NETCAT')
