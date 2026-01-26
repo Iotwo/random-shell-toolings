@@ -595,6 +595,81 @@ function wget_put_data_to_s3() {
     fi;
 }
 
+function openssl_get_data_from_s3() {
+
+    ############################################################
+    # DESCR: Perform HTTP GET on S3, and saves result locally
+    # ARGS:
+    #    (1) - S3 FQDN
+    #    (2) - Access key ID
+    #    (3) - Secret key
+    #    (4) - Object name (with bucket)
+    #    (5) - Local file name (optional)
+    ############################################################
+
+    logger --id --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[${STR_NAME}]: openssl_get_data_from_s3, func called with args(${#}): [${*}].";
+    # dt_val, signature, str_to_sign - variables from global scope
+    declare response_code="";
+
+    return 0;
+}
+
+function openssl_head_data_from_s3() {
+
+    ############################################################
+    # DESCR: Perform HTTP HEAD on S3
+    # ARGS:
+    #    (1) - S3 FQDN
+    #    (2) - Access key ID
+    #    (3) - Secret key
+    #    (4) - Object name (with bucket)
+    ############################################################
+
+    logger --id --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[${STR_NAME}]: openssl_head_data_from_s3, func called with args(${#}): [${*}].";
+    # dt_val, signature, str_to_sign - variables from global scope
+    declare response='';
+
+    return 0;
+}
+
+function openssl_put_data_to_s3() {
+
+    ############################################################
+    # DESCR: Perform HTTP PUT on S3, and saves result locally
+    # ARGS:
+    #    (1) - S3 FQDN
+    #    (2) - Access key ID
+    #    (3) - Secret key
+    #    (4) - Object name (with bucket)
+    #    (5) - Local file name 
+    ############################################################
+
+    logger --id --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[${STR_NAME}]: openssl_put_data_to_s3, func called with args(${#}): [${*}].";
+    # dt_val, signature, str_to_sign - variables from global scope
+    declare response_code='';
+
+    if [ -z "${5}" ]; 
+    then {
+        logger --id --rfc5424 --stderr --tag 'error' --priority 'local7.error' -- "[${STR_NAME}]: openssl_put_data_to_s3, file name not set: \'${5}\'.";
+        return 1;
+    }
+    fi;
+    if [ ! -f "${5}" ]; 
+    then {
+        logger --id --rfc5424 --stderr --tag 'error' --priority 'local7.error' -- "[${STR_NAME}]: openssl_put_data_to_s3, file \'${5}\' does not exist!";
+        return 1; 
+    }
+    fi;
+    if [ ! -r "${5}" ]; 
+    then {
+        logger --id --rfc5424 --stderr --tag 'error' --priority 'local7.error' -- "[${STR_NAME}]: openssl_put_data_to_s3, file \'${5}\' is not readable!";
+        return 1;
+    }
+    fi;
+
+    return 0;
+}
+
 function netcat_get_data_from_s3() {
     ############################################################
     # DESCR: Perform HTTP GET on S3, and saves result locally
