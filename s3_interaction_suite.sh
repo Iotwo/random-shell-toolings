@@ -843,8 +843,8 @@ function print_help() {
     echo -e "\tAvailable variants:";
     echo -e "\t\t OLDCURL - cURL of version 8.2 and lower (used by default).";
     echo -e "\t\t CURL - cURL of version 8.3 and higher.";
-    echo -e "\t\t WGET - wget utility (currently not supported).";
-    echo -e "\t\t NETCAT - netcat utility (currently not supported).";
+    echo -e "\t\t WGET - wget utility.";
+    echo -e "\t\t NETCAT - netcat utility (currently not supported) (only HTTP!).";
     echo -e "\t-r <REQUEST> : set operation type to perform with s3-storage. Available variants: GET, HEAD, PUT.";
     echo -e "\t-f <FQDN> : set S3-compatible storage fully-qualified domain name.";
     echo -e "\t-a <your S3 access key> : set S3 connection access key";
