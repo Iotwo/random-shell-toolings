@@ -615,7 +615,7 @@ function netcat_get_data_from_s3() {
     declare header_date="";
     declare header_authorization="";
     declare header_accept="Accept: */*";
-    declare header_user_agent=""
+    declare header_user_agent="netcat/v1.10-50";
 
     dt_val="$(date -R)";
     str_to_sign="GET\n\napplication/octet-stream\n${dt_val}\n/${4}";
