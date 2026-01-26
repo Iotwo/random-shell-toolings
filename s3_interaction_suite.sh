@@ -820,6 +820,7 @@ function perform_tooling_utility_checks() {
 
     declare -a old_curl_tools=( 'base64' 'date' 'openssl' );
     declare -a wget_tools=( 'base64' 'date' 'openssl' 'wc' );
+    declare -a openssl_tools=( 'base64' 'date' 'wc' );
     declare -a netcat_tools=( 'base64' 'date' 'openssl' 'wc' );
     declare current_curl_ver='';
     declare exists='';
@@ -919,6 +920,34 @@ function perform_tooling_utility_checks() {
             fi;
 
             for utility in "${wget_tools[@]}"
+            do {
+                logger --id --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[${STR_NAME}]: perform_tooling_utility_checks, checking utility \"${utility}\" exists.";
+                exists="$(command -v "${utility}")";
+                w_exc=$?;
+                if [ "${exists}" = "" ] || [ ${w_exc} -ne 0 ]; then
+                    {
+                    logger --id --rfc5424 --stderr --tag 'error' --priority 'local7.error' -- "[${STR_NAME}]: perform_tooling_utility_checks, utility \"${utility}\" is missing. Aborting.";
+                    exit 1;
+                }
+                fi;
+            }
+            done;
+
+            ;;
+        'OPENSSL')
+            logger --id --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[${STR_NAME}]: perform_tooling_utility_checks, argument value is WGET, OpenSSL choosen as backend.";
+            logger --id --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[${STR_NAME}]: perform_tooling_utility_checks, checking OpenSSL exists...";
+            exists="$(command -v 'openssl';)";
+            w_exc=$?;
+            logger --id --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[${STR_NAME}]: perform_tooling_utility_checks, bash.which returned:\"${exists}\" and exited with code - ${w_exc};";
+            if [ -z "${exists}" ] || [ ${w_exc} -ne 0 ]; 
+            then {
+                logger --id --rfc5424 --stderr --tag 'error' --priority 'local7.error' -- "[${STR_NAME}]: perform_tooling_utility_checks, OpenSSL does not persist in the system. Aborting with error.";
+                exit 1;
+            }
+            fi;
+
+            for utility in "${openssl_tools[@]}"
             do {
                 logger --id --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[${STR_NAME}]: perform_tooling_utility_checks, checking utility \"${utility}\" exists.";
                 exists="$(command -v "${utility}")";
