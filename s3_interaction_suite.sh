@@ -629,6 +629,7 @@ function openssl_get_data_from_s3() {
         
     response_code="$(echo -en "${query_line}\n${header_accept}\n${header_host}\n${header_date}\n${header_content_type}\n${header_authorization}\n${header_user_agent}\n\n" |\
                      openssl s_client \
+                        -quiet \
                         -connect "${1}:443" \
                         -servername "${1}";)";
     echo "${response_code}";
