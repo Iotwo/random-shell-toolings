@@ -616,7 +616,7 @@ function openssl_get_data_from_s3() {
     declare header_date="";
     declare header_authorization="";
     declare header_accept="Accept: */*";
-    declare header_user_agent="$(openssl --version 2>&1 | cut --delimiter=' ' --fields='1,2' --output-delimiter='/')";
+    declare header_user_agent="User-Agent: $(openssl --version 2>&1 | cut --delimiter=' ' --fields='1,2' --output-delimiter='/')";
 
     dt_val="$(date -R)";
     str_to_sign="GET\n\napplication/octet-stream\n${dt_val}\n/${4}";
@@ -634,7 +634,7 @@ function openssl_get_data_from_s3() {
                       printf "${header_host}\r\n";
                       printf "${header_user_agent}\r\n";
                       printf "${header_authorization}\r\n";
-                      printf "\r\n\r\n";)
+                      printf "\r\n";)
         
     response_code="$((printf "${query_line}\r\n";
                       printf "${header_accept}\r\n";
@@ -643,7 +643,7 @@ function openssl_get_data_from_s3() {
                       printf "${header_host}\r\n";
                       printf "${header_user_agent}\r\n";
                       printf "${header_authorization}\r\n";
-                      printf "\r\n\r\n";) |\
+                      printf "\r\n";) |\
                      openssl s_client \
                         -quiet \
                         -ign_eof \
@@ -730,7 +730,7 @@ function netcat_get_data_from_s3() {
     declare header_date="";
     declare header_authorization="";
     declare header_accept="Accept: */*";
-    declare header_user_agent="netcat/v1.10-50";
+    declare header_user_agent="User-Agent: netcat/v1.10-50";
 
     dt_val="$(date -R)";
     str_to_sign="GET\n\napplication/octet-stream\n${dt_val}\n/${4}";
