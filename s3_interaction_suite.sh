@@ -637,7 +637,6 @@ function openssl_get_data_from_s3() {
                       printf "\n\n";) |\
                      openssl s_client \
                         -quiet \
-                        -ign_eof \
                         -connect "${1}:443";)";
     echo "${response_code}";
 
