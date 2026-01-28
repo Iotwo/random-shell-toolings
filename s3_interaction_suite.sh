@@ -627,7 +627,14 @@ function openssl_get_data_from_s3() {
     header_date="Date: ${dt_val}";
     header_authorization="Authorization: AWS ${2}:${signature}";
         
-    response_code="$(echo -en "${query_line}\n${header_accept}\n${header_host}\n${header_date}\n${header_content_type}\n${header_authorization}\n${header_user_agent}\n\n" |\
+    response_code="$((printf "${query_line}\n";
+                      printf "${header_accept}\n";
+                      printf "${header_content_type}\n";
+                      printf "${header_date}\n";
+                      printf "${header_host}\n";
+                      printf "${header_user_agent}\n";
+                      printf "${header_authorization}";
+                      printf "\n\n";) |\
                      openssl s_client \
                         -quiet \
                         -ign_eof \
