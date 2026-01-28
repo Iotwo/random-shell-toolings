@@ -641,11 +641,7 @@ function openssl_get_data_from_s3() {
                         -quiet \
                         -ign_eof \
                         -connect "${1}:443";)";
-    echo "RESULT: ${?}"
-    echo 'END QUERY!!!';
-
-    echo -e "\n\n\n\nResponse code: ${response_code}";
-
+    # response code contains full HTTP response including object
     return 0;
 }
 
