@@ -612,7 +612,7 @@ function openssl_get_data_from_s3() {
     declare response_code="";
     declare query_line=""
     declare header_host="";
-    declare header_content_type="Content-Type: application/octet-stream";
+    declare header_content_type='Content-Type: application/octet-stream';
     declare header_date="";
     declare header_authorization="";
     declare header_accept="Accept: */*";
@@ -626,6 +626,15 @@ function openssl_get_data_from_s3() {
     header_host="Host: ${1}";
     header_date="Date: ${dt_val}";
     header_authorization="Authorization: AWS ${2}:${signature}";
+
+    (printf "${query_line}\r\n";
+                      printf "${header_accept}\r\n";
+                      printf "${header_content_type}\r\n";
+                      printf "${header_date}\r\n";
+                      printf "${header_host}\r\n";
+                      printf "${header_user_agent}\r\n";
+                      printf "${header_authorization}\r\n";
+                      printf "\r\n\r\n";)
         
     response_code="$((printf "${query_line}\r\n";
                       printf "${header_accept}\r\n";
