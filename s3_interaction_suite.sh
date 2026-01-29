@@ -715,7 +715,7 @@ function openssl_head_data_from_s3() {
                         -quiet \
                         -ign_eof \
                         -connect "${1}:443" |\
-                     head --silent --lines=1 "${5}.tmp" |\
+                     head --silent --lines=1 - |\
                      awk -F' ' '/HTTP\/[0-9.]+/{print $2}';)";
 
     if [ "${response_code}" == "200" ]; 
