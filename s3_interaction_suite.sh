@@ -637,19 +637,22 @@ function openssl_get_data_from_s3() {
     header_authorization="Authorization: AWS ${2}:${signature}";
     
 
-    response_code="$((printf "${query_line}\r\n";
-                      printf "${header_accept}\r\n";
-                      printf "${header_content_type}\r\n";
-                      printf "${header_date}\r\n";
-                      printf "${header_host}\r\n";
-                      printf "${header_user_agent}\r\n";
-                      printf "${header_authorization}\r\n";
-                      printf "\r\n";) |\
-                     openssl s_client \
-                        -quiet \
-                        -ign_eof \
-                        -connect "${1}:443" > "./${5}")";
-    echo "Content: $(cat "./${5}";)";
+    (printf "${query_line}\r\n";
+     printf "${header_accept}\r\n";
+     printf "${header_content_type}\r\n";
+     printf "${header_date}\r\n";
+     printf "${header_host}\r\n";
+     printf "${header_user_agent}\r\n";
+     printf "${header_authorization}\r\n";
+     printf "\r\n";) |\
+    openssl s_client \
+        -quiet \
+        -ign_eof \
+        -connect "${1}:443" > "${5}";
+    tr --delimiter='\r' < "${5}" | sed '1,/^$/d' > "${5}";
+
+    echo "Content: $(cat "${5}";)";
+    
     # response code contains full HTTP response including object
     return 0;
 }
