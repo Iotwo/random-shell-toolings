@@ -1208,7 +1208,7 @@ case "${req}" in
                 method_result=${?};
                 ;;
             'OPENSSL')
-                openssl_руфв_data_from_s3 "${fqdn}" "${key_id}" "${key_s}" "${obj}";
+                openssl_head_data_from_s3 "${fqdn}" "${key_id}" "${key_s}" "${obj}";
                 method_result=${?};
                 ;;
             'NETCAT')
