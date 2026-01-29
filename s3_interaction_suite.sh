@@ -648,8 +648,9 @@ function openssl_get_data_from_s3() {
     openssl s_client \
         -quiet \
         -ign_eof \
-        -connect "${1}:443" > "${5}";
-    tr -d '\r' < "${5}" | sed '1,/^$/d' > "${5}";
+        -connect "${1}:443" > "${5}.tmp";
+    tr -d '\r' < "${5}.tmp" | sed '1,/^$/d' > "${5}";
+    rm "${5}.tmp";
 
     echo "Content: $(cat "${5}";)";
     
