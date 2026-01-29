@@ -608,9 +608,13 @@ function openssl_get_data_from_s3() {
     ############################################################
 
     logger --id --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[${STR_NAME}]: openssl_get_data_from_s3, func called with args(${#}): [${*}].";
+    if [ -z "${5}" ]; 
+    then {
+        logger --id --rfc5424 --stderr --tag 'warning' --priority 'local7.warning' -- "[${STR_NAME}]: openssl_get_data_from_s3, local file name not provided, cannot proceed, exiting.";
+        return 0;
+    }
+    fi;
     # dt_val, signature, str_to_sign - variables from global scope
-    
-    declare response="";
     declare response_code="";
     declare query_line="";
     declare header_host="";
@@ -619,13 +623,6 @@ function openssl_get_data_from_s3() {
     declare header_authorization="";
     declare header_accept="Accept: */*";
     declare header_user_agent="User-Agent: $(openssl --version 2>&1 | cut --delimiter=' ' --fields='1,2' --output-delimiter='/')";
-
-    if [ -z "${5}" ]; 
-    then {
-        logger --id --rfc5424 --stderr --tag 'warning' --priority 'local7.warning' -- "[${STR_NAME}]: openssl_get_data_from_s3, local file name not provided, cannot proceed, exiting.";
-        return 0;
-    }
-    fi;
 
     dt_val="$(date -R)";
     str_to_sign="GET\n\napplication/octet-stream\n${dt_val}\n/${4}";
@@ -636,7 +633,6 @@ function openssl_get_data_from_s3() {
     header_date="Date: ${dt_val}";
     header_authorization="Authorization: AWS ${2}:${signature}";
     
-
     (printf "${query_line}\r\n";
      printf "${header_accept}\r\n";
      printf "${header_content_type}\r\n";
@@ -685,6 +681,38 @@ function openssl_head_data_from_s3() {
     logger --id --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[${STR_NAME}]: openssl_head_data_from_s3, func called with args(${#}): [${*}].";
     # dt_val, signature, str_to_sign - variables from global scope
     declare response='';
+
+    # dt_val, signature, str_to_sign - variables from global scope
+    declare response_code="";
+    declare query_line="";
+    declare header_host="";
+    declare header_content_type='Content-Type: application/octet-stream';
+    declare header_date="";
+    declare header_authorization="";
+    declare header_accept="Accept: */*";
+    declare header_user_agent="User-Agent: $(openssl --version 2>&1 | cut --delimiter=' ' --fields='1,2' --output-delimiter='/')";
+
+    dt_val="$(date -R)";
+    str_to_sign="HEAD\n\napplication/octet-stream\n${dt_val}\n/${4}";
+    signature="$(echo -en "${str_to_sign}" | openssl sha1 -hmac "${3}" -binary | base64 -)";
+
+    query_line="HEAD /${4} HTTP/1.1";
+    header_host="Host: ${1}";
+    header_date="Date: ${dt_val}";
+    header_authorization="Authorization: AWS ${2}:${signature}";
+    
+    (printf "${query_line}\r\n";
+     printf "${header_accept}\r\n";
+     printf "${header_content_type}\r\n";
+     printf "${header_date}\r\n";
+     printf "${header_host}\r\n";
+     printf "${header_user_agent}\r\n";
+     printf "${header_authorization}\r\n";
+     printf "\r\n";) |\
+    openssl s_client \
+        -quiet \
+        -ign_eof \
+        -connect "${1}:443";
 
     return 0;
 }
