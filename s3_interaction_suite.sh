@@ -615,13 +615,13 @@ function openssl_get_data_from_s3() {
     }
     fi;
     # dt_val, signature, str_to_sign - variables from global scope
-    declare response_code="";
-    declare query_line="";
-    declare header_host="";
+    declare response_code='';
+    declare query_line='';
+    declare header_host='';
     declare header_content_type='Content-Type: application/octet-stream';
-    declare header_date="";
-    declare header_authorization="";
-    declare header_accept="Accept: */*";
+    declare header_date='';
+    declare header_authorization='';
+    declare header_accept='Accept: */*';
     declare header_user_agent="User-Agent: $(openssl --version 2>&1 | cut --delimiter=' ' --fields='1,2' --output-delimiter='/')";
 
     dt_val="$(date -R)";
@@ -680,17 +680,14 @@ function openssl_head_data_from_s3() {
 
     logger --id --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[${STR_NAME}]: openssl_head_data_from_s3, func called with args(${#}): [${*}].";
     # dt_val, signature, str_to_sign - variables from global scope
-    declare response='';
-
-    # dt_val, signature, str_to_sign - variables from global scope
-    declare response_code="";
-    declare query_line="";
-    declare header_host="";
+    declare response_code='';
+    declare query_line='';
+    declare header_host='';
     declare header_connection='Connection: close';
     declare header_content_type='Content-Type: application/octet-stream';
-    declare header_date="";
-    declare header_authorization="";
-    declare header_accept="Accept: */*";
+    declare header_date='';
+    declare header_authorization='';
+    declare header_accept='Accept: */*';
     declare header_user_agent="User-Agent: $(openssl --version 2>&1 | cut --delimiter=' ' --fields='1,2' --output-delimiter='/')";
 
     dt_val="$(date -R)";
