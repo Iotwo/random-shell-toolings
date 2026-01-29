@@ -686,6 +686,7 @@ function openssl_head_data_from_s3() {
     declare response_code="";
     declare query_line="";
     declare header_host="";
+    declare header_connection='Connection: close';
     declare header_content_type='Content-Type: application/octet-stream';
     declare header_date="";
     declare header_authorization="";
@@ -703,6 +704,7 @@ function openssl_head_data_from_s3() {
     
     (printf "${query_line}\r\n";
      printf "${header_accept}\r\n";
+     printf "${header_connection}\r\n";
      printf "${header_content_type}\r\n";
      printf "${header_date}\r\n";
      printf "${header_host}\r\n";
