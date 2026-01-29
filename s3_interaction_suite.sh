@@ -649,12 +649,13 @@ function openssl_get_data_from_s3() {
         -quiet \
         -ign_eof \
         -connect "${1}:443" > "${5}.tmp";
+
+    response_code=$(head --silent --lines=1 "${5}.tmp" ;);
+    echo "RESPONSE CODE: ${response_code}";
+
     tr -d '\r' < "${5}.tmp" | sed '1,/^$/d' > "${5}";
     rm "${5}.tmp";
-
-    echo "Content: $(cat "${5}";)";
     
-    # response code contains full HTTP response including object
     return 0;
 }
 
