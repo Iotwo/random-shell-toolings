@@ -650,16 +650,16 @@ function openssl_get_data_from_s3() {
     
     if [ "${response_code}" == "200" ]; 
     then {
-        logger --id --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[${STR_NAME}]: wget_get_data_from_s3, Response code: ${response_code}. Request executed successfully.";
-        logger --id --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[${STR_NAME}]: wget_get_data_from_s3, Processing recieved object...";
+        logger --id --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[${STR_NAME}]: openssl_get_data_from_s3, Response code: ${response_code}. Request executed successfully.";
+        logger --id --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[${STR_NAME}]: openssl_get_data_from_s3, Processing recieved object...";
         tr -d '\r' < "${5}.tmp" | sed '1,/^$/d' > "${5}";
         rm "${5}.tmp";
-        logger --id --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[${STR_NAME}]: wget_get_data_from_s3, Object processed.";
-        logger --id --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[${STR_NAME}]: wget_get_data_from_s3, Function exited with code 0.";
+        logger --id --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[${STR_NAME}]: openssl_get_data_from_s3, Object processed.";
+        logger --id --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[${STR_NAME}]: openssl_get_data_from_s3, Function exited with code 0.";
         return 0;
     }
     else {
-        logger --id --rfc5424 --stderr --tag 'warning' --priority 'local7.warning' -- "[${STR_NAME}]: wget_get_data_from_s3,  Response code: ${response_code}. Something went wrong.";
+        logger --id --rfc5424 --stderr --tag 'warning' --priority 'local7.warning' -- "[${STR_NAME}]: openssl_get_data_from_s3,  Response code: ${response_code}. Something went wrong.";
         return 1;
     }
     fi;
@@ -702,19 +702,40 @@ function openssl_head_data_from_s3() {
     header_date="Date: ${dt_val}";
     header_authorization="Authorization: AWS ${2}:${signature}";
     
-    (printf "${query_line}\r\n";
-     printf "${header_accept}\r\n";
-     printf "${header_connection}\r\n";
-     printf "${header_content_type}\r\n";
-     printf "${header_date}\r\n";
-     printf "${header_host}\r\n";
-     printf "${header_user_agent}\r\n";
-     printf "${header_authorization}\r\n";
-     printf "\r\n";) |\
-    openssl s_client \
-        -quiet \
-        -ign_eof \
-        -connect "${1}:443";
+    response_code="$((printf "${query_line}\r\n";
+                      printf "${header_accept}\r\n";
+                      printf "${header_connection}\r\n";
+                      printf "${header_content_type}\r\n";
+                      printf "${header_date}\r\n";
+                      printf "${header_host}\r\n";
+                      printf "${header_user_agent}\r\n";
+                      printf "${header_authorization}\r\n";
+                      printf "\r\n";) |\
+                     openssl s_client \
+                        -quiet \
+                        -ign_eof \
+                        -connect "${1}:443" |\
+                     head --silent --lines=1 "${5}.tmp" |\
+                     awk -F' ' '/HTTP\/[0-9.]+/{print $2}';)";
+
+    if [ "${response_code}" == "200" ]; 
+    then {
+        logger --id --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[$STR_NAME]: openssl_head_data_from_s3, Response code: ${response_code}. Request executed successfully.";
+        logger --id --rfc5424 --stderr --tag 'info' --priority 'local7.info' -- "[$STR_NAME]: openssl_head_data_from_s3, Object ${4} exists."
+        logger --id --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[$STR_NAME]: openssl_head_data_from_s3, Function exited with code 0.";
+        return 0;
+    }
+    elif [ "${response_code}" == "404" ]; 
+    then {
+        logger --id --rfc5424 --stderr --tag 'info' --priority 'local7.info' -- "[$STR_NAME]: openssl_head_data_from_s3, Response code: ${response_code}. Requested object is missing on the resource.";
+        logger --id --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[$STR_NAME]: openssl_head_data_from_s3, Function exited with code 0.";
+        return 0;
+    }
+    else {
+        logger --id --rfc5424 --stderr --tag 'warning' --priority 'local7.warning' -- "[$STR_NAME]: openssl_head_data_from_s3,  Response code: ${response_code}. Something went wrong.";
+        return 1;
+    }
+    fi;
 
     return 0;
 }
