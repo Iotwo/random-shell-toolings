@@ -612,8 +612,7 @@ function openssl_get_data_from_s3() {
     
     declare response="";
     declare response_code="";
-    declare
-    declare query_line=""
+    declare query_line="";
     declare header_host="";
     declare header_content_type='Content-Type: application/octet-stream';
     declare header_date="";
