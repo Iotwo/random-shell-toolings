@@ -604,12 +604,15 @@ function openssl_get_data_from_s3() {
     #    (2) - Access key ID
     #    (3) - Secret key
     #    (4) - Object name (with bucket)
-    #    (5) - Local file name (optional)
+    #    (5) - Local file name
     ############################################################
 
     logger --id --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[${STR_NAME}]: openssl_get_data_from_s3, func called with args(${#}): [${*}].";
     # dt_val, signature, str_to_sign - variables from global scope
+    
+    declare response="";
     declare response_code="";
+    declare
     declare query_line=""
     declare header_host="";
     declare header_content_type='Content-Type: application/octet-stream';
@@ -617,6 +620,13 @@ function openssl_get_data_from_s3() {
     declare header_authorization="";
     declare header_accept="Accept: */*";
     declare header_user_agent="User-Agent: $(openssl --version 2>&1 | cut --delimiter=' ' --fields='1,2' --output-delimiter='/')";
+
+    if [ -z "${5}" ]; 
+    then {
+        logger --id --rfc5424 --stderr --tag 'warning' --priority 'local7.warning' -- "[${STR_NAME}]: openssl_get_data_from_s3, local file name not provided, cannot proceed, exiting.";
+        return 0;
+    }
+    fi;
 
     dt_val="$(date -R)";
     str_to_sign="GET\n\napplication/octet-stream\n${dt_val}\n/${4}";
@@ -627,7 +637,6 @@ function openssl_get_data_from_s3() {
     header_date="Date: ${dt_val}";
     header_authorization="Authorization: AWS ${2}:${signature}";
     
-    echo 'START QUERY!!!';
 
     response_code="$((printf "${query_line}\r\n";
                       printf "${header_accept}\r\n";
@@ -640,7 +649,8 @@ function openssl_get_data_from_s3() {
                      openssl s_client \
                         -quiet \
                         -ign_eof \
-                        -connect "${1}:443";)";
+                        -connect "${1}:443" > "./${5}")";
+    echo "Content: $(cat "./${5}";)";
     # response code contains full HTTP response including object
     return 0;
 }
