@@ -651,11 +651,23 @@ function openssl_get_data_from_s3() {
         -connect "${1}:443" > "${5}.tmp";
 
     response_code=$(head --silent --lines=1 "${5}.tmp" | awk -F' ' '/HTTP\/[0-9.]+/{print $2}';);
-    echo "RESPONSE CODE: ${response_code}";
-
-    tr -d '\r' < "${5}.tmp" | sed '1,/^$/d' > "${5}";
-    rm "${5}.tmp";
     
+    if [ "${response_code}" == "200" ]; 
+    then {
+        logger --id --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[${STR_NAME}]: wget_get_data_from_s3, Response code: ${response_code}. Request executed successfully.";
+        logger --id --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[${STR_NAME}]: wget_get_data_from_s3, Processing recieved object...";
+        tr -d '\r' < "${5}.tmp" | sed '1,/^$/d' > "${5}";
+        rm "${5}.tmp";
+        logger --id --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[${STR_NAME}]: wget_get_data_from_s3, Object processed.";
+        logger --id --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[${STR_NAME}]: wget_get_data_from_s3, Function exited with code 0.";
+        return 0;
+    }
+    else {
+        logger --id --rfc5424 --stderr --tag 'warning' --priority 'local7.warning' -- "[${STR_NAME}]: wget_get_data_from_s3,  Response code: ${response_code}. Something went wrong.";
+        return 1;
+    }
+    fi;
+
     return 0;
 }
 
