@@ -15,6 +15,7 @@ declare args_passed="";
 declare backend='OLDCURL';
 declare req='';
 declare fqdn='';
+declare port='';
 declare sigstring='aws:amz:ru-central1:s3';
 declare key_id='';
 declare key_s='';
@@ -921,9 +922,6 @@ function netcat_head_data_from_s3() {
                      netcat -v -v "${1}" 9000 | head --silent --lines=1 - |\
                      head --silent --lines=1 - |\
                      awk -F' ' '/HTTP\/[0-9.]+/{print $2}';)";
-        
-    #response_code="$(echo -en "${query_line}\n${header_host}\n${header_date}\n${header_content_type}\n${header_authorization}\n\n" | netcat -v -v "${1}" 9000;)";
-
 
     if [ "${response_code}" == "200" ]; 
     then {
@@ -1204,6 +1202,7 @@ function print_help() {
     echo -e "\t\t OPENSSL - openssl s_client utility (currently not supported)."
     echo -e "\t-r <REQUEST> : set operation type to perform with s3-storage. Available variants: GET, HEAD, PUT.";
     echo -e "\t-f <FQDN> : set S3-compatible storage fully-qualified domain name.";
+    echo -e "\t-p <REMOTE PORT> : set remote port. Default is 443 (HTTPS)."
     echo -e "\t-a <your S3 access key> : set S3 connection access key";
     echo -e "\t-s <your S3 secret key> : set S3 connection secret key";
     echo -e "\t-S <S3 signature> : (optional) set S3 connection signature string";
@@ -1258,6 +1257,9 @@ do {
              ;;
         'o')  # target s3 object
              obj="${OPTARG}";
+             ;;
+        'p') # s3 remote port
+             port="${OPTARG}";
              ;;
         'r')  # operation to perform with the object
              req="${OPTARG}";
