@@ -755,7 +755,6 @@ function openssl_put_data_to_s3() {
     declare response_code='';
     declare query_line='';
     declare header_host='';
-    declare header_connection='Connection: close';
     declare header_content_len=0;
     declare header_content_type='Content-Type: application/octet-stream';
     declare header_date='';
@@ -795,16 +794,15 @@ function openssl_put_data_to_s3() {
     (printf "${query_line}\r\n";
      printf "${header_accept}\r\n";
      printf "${header_content_type}\r\n";
+     printf "${header_content_len}\r\n";
      printf "${header_date}\r\n";
      printf "${header_host}\r\n";
      printf "${header_user_agent}\r\n";
      printf "${header_authorization}\r\n";
-     printf "${header_content_len}\r\n";
      printf "\r\n";
      cat "${5}";) |\
     openssl s_client \
         -quiet \
-        -ign_eof \
         -connect "${1}:443" > "${5}.tmp";
 
     response_code=$(head --silent --lines=1 "${5}.tmp" | awk -F' ' '/HTTP\/[0-9.]+/{print $2}';); 
