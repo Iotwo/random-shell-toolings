@@ -652,6 +652,7 @@ function openssl_get_data_from_s3() {
     then {
         logger --id --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[${STR_NAME}]: openssl_get_data_from_s3, Response code: ${response_code}. Request executed successfully.";
         logger --id --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[${STR_NAME}]: openssl_get_data_from_s3, Processing recieved object...";
+        logger --id --rfc5424 --stderr --tag 'info' --priority 'local7.info' -- "[${STR_NAME}]: openssl_get_data_from_s3, Might work incorrectly with binary types!";
         tr -d '\r' < "${5}.tmp" | sed '1,/^$/d' > "${5}";
         rm "${5}.tmp";
         logger --id --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[${STR_NAME}]: openssl_get_data_from_s3, Object processed.";
@@ -752,6 +753,15 @@ function openssl_put_data_to_s3() {
     logger --id --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[${STR_NAME}]: openssl_put_data_to_s3, func called with args(${#}): [${*}].";
     # dt_val, signature, str_to_sign - variables from global scope
     declare response_code='';
+    declare query_line='';
+    declare header_host='';
+    declare header_connection='Connection: close';
+    declare header_content_len=0;
+    declare header_content_type='Content-Type: application/octet-stream';
+    declare header_date='';
+    declare header_authorization='';
+    declare header_accept='Accept: */*';
+    declare header_user_agent="User-Agent: $(openssl --version 2>&1 | cut --delimiter=' ' --fields='1,2' --output-delimiter='/')";
 
     if [ -z "${5}" ]; 
     then {
@@ -772,7 +782,44 @@ function openssl_put_data_to_s3() {
     }
     fi;
 
-    return 0;
+    dt_val="$(date -R)";
+    str_to_sign="PUT\n\napplication/octet-stream\n${dt_val}\n/${4}";
+    signature="$(echo -en "${str_to_sign}" | openssl sha1 -hmac "${3}" -binary | base64 -)";
+
+    query_line="PUT /${4} HTTP/1.1";
+    header_host="Host: ${1}";
+    header_date="Date: ${dt_val}";
+    header_authorization="Authorization: AWS ${2}:${signature}";
+    header_content_len="$(wc --bytes < "${5}")";
+
+    (printf "${query_line}\r\n";
+     printf "${header_accept}\r\n";
+     printf "${header_content_type}\r\n";
+     printf "${header_date}\r\n";
+     printf "${header_host}\r\n";
+     printf "${header_user_agent}\r\n";
+     printf "${header_authorization}\r\n";
+     printf "${header_content_len}\r\n";
+     printf "\r\n";
+     cat "${5}";) |\
+    openssl s_client \
+        -quiet \
+        -ign_eof \
+        -connect "${1}:443" > "${5}.tmp";
+
+    response_code=$(head --silent --lines=1 "${5}.tmp" | awk -F' ' '/HTTP\/[0-9.]+/{print $2}';); 
+
+    if [ "${response_code}" == "200" ]; 
+    then {
+        logger --id --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[${STR_NAME}]: openssl_put_data_to_s3, Response code: ${response_code}. Request executed successfully.";
+        logger --id --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[${STR_NAME}]: openssl_put_data_to_s3, func exited with code 0.";
+        return 0;
+    }
+    else {
+        logger --id --rfc5424 --stderr --tag 'warning' --priority 'local7.warning' -- "[${STR_NAME}]: openssl_put_data_to_s3, Response code: ${response_code}. Something went wrong.";
+        return 1;
+    }
+    fi;
 }
 
 function netcat_get_data_from_s3() {
