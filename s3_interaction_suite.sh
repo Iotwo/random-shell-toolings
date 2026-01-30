@@ -675,8 +675,6 @@ function openssl_get_data_from_s3() {
         return 1;
     }
     fi;
-
-    return 0;
 }
 
 function openssl_head_data_from_s3() {
@@ -842,14 +840,19 @@ function netcat_get_data_from_s3() {
     #    (3) - Access key ID
     #    (4) - Secret key
     #    (5) - Object name (with bucket)
-    #    (6) - Local file name (optional)
-    ############################################################
+    #    (6) - Local file name     ############################################################
 
     logger --id --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[${STR_NAME}]: netcat_get_data_from_s3, func called with args(${#}): [${*}].";
     logger --id --rfc5424 --tag 'warning' --stderr --priority 'local7.warning' -- "[${STR_NAME}]: netcat_get_data_from_s3, this method can only implement bare HTTP, no security supported.";
+    if [ -z "${6}" ]; 
+    then {
+        logger --id --rfc5424 --stderr --tag 'warning' --priority 'local7.warning' -- "[${STR_NAME}]: netcat_get_data_from_s3, local file name not provided, cannot proceed, exiting.";
+        return 0;
+    }
+    fi;
     # dt_val, signature, str_to_sign - variables from global scope
-    declare response_code="";
-    declare query_line=''
+    declare response_code='';
+    declare query_line='';
     declare header_host='';
     declare header_content_type='Content-Type: application/octet-stream';
     declare header_date='';
@@ -861,24 +864,31 @@ function netcat_get_data_from_s3() {
     str_to_sign="GET\n\napplication/octet-stream\n${dt_val}\n/${5}";
     signature="$(echo -en "${str_to_sign}" | openssl sha1 -hmac "${4}" -binary | base64 -)";
 
-    if [ -z "${6}" ];
-    then {
-        query_line="GET /${5} HTTP/1.1";
-        header_host="Host: ${1}";
-        header_date="Date: ${dt_val}";
-        header_authorization="Authorization: AWS ${3}:${signature}";
-        
-        response_code="$(echo -en "${query_line}\n${header_host}\n${header_date}\n${header_content_type}\n${header_authorization}\n\n" |\
-                         netcat -v -v "${1}" "${2}";)";
-    }
-    else {
-        response_code="$()";
-    }
-    fi;
+    query_line="GET /${5} HTTP/1.1";
+    header_host="Host: ${1}";
+    header_date="Date: ${dt_val}";
+    header_authorization="Authorization: AWS ${3}:${signature}";
 
+    (printf "${query_line}\r\n";
+     printf "${header_accept}\r\n";
+     printf "${header_content_type}\r\n";
+     printf "${header_date}\r\n";
+     printf "${header_host}\r\n";
+     printf "${header_user_agent}\r\n";
+     printf "${header_authorization}\r\n";
+     printf "\r\n";) |\
+    netcat -v -v "${1}" "${2}" > "${6}.tmp";
+
+    response_code=$(head --silent --lines=1 "${6}.tmp" | awk -F' ' '/HTTP\/[0-9.]+/{print $2}';);
+    
     if [ "${response_code}" == "200" ]; 
     then {
         logger --id --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[${STR_NAME}]: netcat_get_data_from_s3, Response code: ${response_code}. Request executed successfully.";
+        logger --id --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[${STR_NAME}]: netcat_get_data_from_s3, Processing recieved object...";
+        logger --id --rfc5424 --stderr --tag 'info' --priority 'local7.info' -- "[${STR_NAME}]: netcat_get_data_from_s3, Might work incorrectly with binary types!";
+        tr -d '\r' < "${6}.tmp" | sed '1,/^$/d' > "${6}";
+        rm "${6}.tmp";
+        logger --id --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[${STR_NAME}]: netcat_get_data_from_s3, Object processed.";
         logger --id --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[${STR_NAME}]: netcat_get_data_from_s3, Function exited with code 0.";
         return 0;
     }
@@ -905,15 +915,15 @@ function netcat_head_data_from_s3() {
     logger --id --rfc5424 --tag 'warning' --stderr --priority 'local7.warning' -- "[${STR_NAME}]: netcat_head_data_from_s3, this method can only implement bare HTTP, no security supported.";
 
     # dt_val, signature, str_to_sign - variables from global scope
-    declare response_code="";
-    declare query_line=""
-    declare header_host="";
-    declare header_connection='Connection: close';
-    declare header_content_type="Content-Type: application/octet-stream";
-    declare header_date="";
-    declare header_authorization="";
-    declare header_accept="Accept: */*";
-    declare header_user_agent="User-Agent: netcat/v1.10-50";
+    declare response_code='';
+    declare query_line='';
+    declare header_host='';
+    declare header_connection='Connection: close'
+    declare header_content_type='Content-Type: application/octet-stream';
+    declare header_date='';
+    declare header_authorization='';
+    declare header_accept='Accept: */*';
+    declare header_user_agent='User-Agent: netcat/v1.10-50';
 
     dt_val="$(date -R)";
     str_to_sign="GET\n\napplication/octet-stream\n${dt_val}\n/${5}";
