@@ -789,7 +789,7 @@ function openssl_put_data_to_s3() {
     header_host="Host: ${1}";
     header_date="Date: ${dt_val}";
     header_authorization="Authorization: AWS ${2}:${signature}";
-    header_content_len="Contetn-Length: $(wc --bytes < "${5}")";
+    header_content_len="Content-Length: $(wc --bytes < "${5}")";
 
     (printf "${query_line}\r\n";
      printf "${header_accept}\r\n";
