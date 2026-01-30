@@ -15,7 +15,7 @@ declare args_passed="";
 declare backend='OLDCURL';
 declare req='';
 declare fqdn='';
-declare port='';
+declare port='443';
 declare sigstring='aws:amz:ru-central1:s3';
 declare key_id='';
 declare key_s='';
@@ -64,10 +64,11 @@ function oldcurl_get_data_from_s3() {
     # DESCR: Perform HTTP GET on S3, and saves result locally
     # ARGS:
     #    (1) - S3 FQDN
-    #    (2) - Access key ID
-    #    (3) - Secret key
-    #    (4) - Object name (with bucket)
-    #    (5) - Local file name (optional)
+    #    (2) - S3 destination port
+    #    (3) - Access key ID
+    #    (4) - Secret key
+    #    (5) - Object name (with bucket)
+    #    (6) - Local file name (optional)
     ############################################################
 
     logger --id --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[${STR_NAME}]: oldcurl_get_data_from_s3, func called with args(${#}): [${*}].";
@@ -75,10 +76,10 @@ function oldcurl_get_data_from_s3() {
     declare response_code="";
 
     dt_val="$(date -R)";
-    str_to_sign="GET\n\napplication/octet-stream\n${dt_val}\n/${4}";
-    signature="$(echo -en "${str_to_sign}" | openssl sha1 -hmac "${3}" -binary | base64 -)";
+    str_to_sign="GET\n\napplication/octet-stream\n${dt_val}\n/${5}";
+    signature="$(echo -en "${str_to_sign}" | openssl sha1 -hmac "${4}" -binary | base64 -)";
 
-    if [ -z "${5}" ]; 
+    if [ -z "${6}" ]; 
     then {
         logger --id --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[${STR_NAME}]: oldcurl_get_data_from_s3, Argument \'local path\' is not set. Downloaded data will be saved with s3-object name.";
         response_code="$(curl \
@@ -89,23 +90,23 @@ function oldcurl_get_data_from_s3() {
                             --header "Host: ${1}" \
                             --header "Date: ${dt_val}" \
                             --header 'Content-Type: application/octet-stream' \
-                            --header "Authorization: AWS ${2}:${signature}" \
+                            --header "Authorization: AWS ${3}:${signature}" \
                             --write-out "%{http_code}" \
-                            --url "https://${1}/${4}";)";
+                            --url "https://${1}:${2}/${5}";)";
     }
     else {
         logger --id --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[${STR_NAME}]: oldcurl_get_data_from_s3, Argument \'local path\' is set. Downloaded data will be saved as ${5}.";
         response_code="$(curl \
                             --location \
                             --silent \
-                            --output "${5}" \
+                            --output "${6}" \
                             --request 'GET' \
                             --header "Host: ${1}" \
                             --header "Date: ${dt_val}" \
                             --header 'Content-Type: application/octet-stream' \
-                            --header "Authorization: AWS ${2}:${signature}" \
+                            --header "Authorization: AWS ${3}:${signature}" \
                             --write-out "%{http_code}" \
-                            --url "https://${1}/${4}";)";
+                            --url "https://${1}:${2}/${5}";)";
     }
     fi;
 
@@ -128,9 +129,10 @@ function oldcurl_head_data_from_s3() {
     # DESCR: Perform HTTP HEAD on S3
     # ARGS:
     #    (1) - S3 FQDN
-    #    (2) - Access key ID
-    #    (3) - Secret key
-    #    (4) - Object name (with bucket)
+    #    (2) - S3 destination port
+    #    (3) - Access key ID
+    #    (4) - Secret key
+    #    (5) - Object name (with bucket)
     ############################################################
 
     logger --id --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[${STR_NAME}]: oldcurl_head_data_from_s3, func called with args(${#}): [${*}].";
@@ -140,8 +142,8 @@ function oldcurl_head_data_from_s3() {
     declare cont_len='';
 
     dt_val="$(date -R)";
-    str_to_sign="GET\n\napplication/octet-stream\n${dt_val}\n/${4}";
-    signature="$(echo -en "${str_to_sign}" | openssl sha1 -hmac "${3}" -binary | base64 - )";
+    str_to_sign="GET\n\napplication/octet-stream\n${dt_val}\n/${5}";
+    signature="$(echo -en "${str_to_sign}" | openssl sha1 -hmac "${4}" -binary | base64 - )";
 
     response="$(curl \
                     --location \
@@ -150,17 +152,17 @@ function oldcurl_head_data_from_s3() {
                     --header "Host: ${1}" \
                     --header "Date: ${dt_val}" \
                     --header 'Content-Type: application/octet-stream' \
-                    --header "Authorization: AWS ${2}:${signature}" \
+                    --header "Authorization: AWS ${3}:${signature}" \
                     --write-out "%{http_code},header%{content-length}" \
                     --output '/dev/null' \
-                    --url "https://${1}/${4}";)";
+                    --url "https://${1}:${2}/${5}";)";
     response_code=$(echo "${response}" | tail --lines 1 | cut --delimiter=',' --fields=1;);
     cont_len=$(echo "${response}" | tail --lines 1 | cut --delimiter=',' --fields=2;);
 
     if [ "${response_code}" == "200" ]; 
     then {
         logger --id --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[$STR_NAME]: oldcurl_head_data_from_s3, Response code: ${response_code}. Request executed successfully.";
-        logger --id --rfc5424 --stderr --tag 'info' --priority 'local7.info' -- "[$STR_NAME]: oldcurl_head_data_from_s3, Object ${4} exists and has length ${cont_len} bytes."
+        logger --id --rfc5424 --stderr --tag 'info' --priority 'local7.info' -- "[$STR_NAME]: oldcurl_head_data_from_s3, Object ${5} exists and has length ${cont_len} bytes."
         logger --id --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[$STR_NAME]: oldcurl_head_data_from_s3, Function exited with code 0.";
         return 0;
     }
@@ -183,38 +185,39 @@ function oldcurl_put_data_to_s3() {
     # DESCR: Perform HTTP PUT on S3, and saves result locally
     # ARGS:
     #    (1) - S3 FQDN
-    #    (2) - Access key ID
-    #    (3) - Secret key
-    #    (4) - Object name (with bucket)
-    #    (5) - Local file name 
+    #    (2) - S3 destination port
+    #    (3) - Access key ID
+    #    (4) - Secret key
+    #    (5) - Object name (with bucket)
+    #    (6) - Local file name
     ############################################################
 
     logger --id --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[${STR_NAME}]: oldcurl_put_data_to_s3, func called with args(${#}): [${*}].";
     # dt_val, signature, str_to_sign - variables from global scope
     declare response_code='';
 
-    if [ -z "${5}" ]; 
+    if [ -z "${6}" ]; 
     then {
-        logger --id --rfc5424 --stderr --tag 'error' --priority 'local7.error' -- "[${STR_NAME}]: oldcurl_put_data_to_s3, file name not set: \'${5}\'.";
+        logger --id --rfc5424 --stderr --tag 'error' --priority 'local7.error' -- "[${STR_NAME}]: oldcurl_put_data_to_s3, file name not set: \'${6}\'.";
         return 1;
     }
     fi;
-    if [ ! -f "${5}" ]; 
+    if [ ! -f "${6}" ]; 
     then {
-        logger --id --rfc5424 --stderr --tag 'error' --priority 'local7.error' -- "[${STR_NAME}]: oldcurl_put_data_to_s3, file \'${5}\' does not exist!";
+        logger --id --rfc5424 --stderr --tag 'error' --priority 'local7.error' -- "[${STR_NAME}]: oldcurl_put_data_to_s3, file \'${6}\' does not exist!";
         return 1; 
     }
     fi;
-    if [ ! -r "${5}" ]; 
+    if [ ! -r "${6}" ]; 
     then {
-        logger --id --rfc5424 --stderr --tag 'error' --priority 'local7.error' -- "[${STR_NAME}]: oldcurl_put_data_to_s3, file \'${5}\' is not readable!";
+        logger --id --rfc5424 --stderr --tag 'error' --priority 'local7.error' -- "[${STR_NAME}]: oldcurl_put_data_to_s3, file \'${6}\' is not readable!";
         return 1;
     }
     fi;
 
     dt_val="$(date -R)";
-    str_to_sign="PUT\n\napplication/octet-stream\n${dt_val}\n/${4}";
-    signature="$(echo -en "${str_to_sign}" | openssl sha1 -hmac "${3}" -binary | base64)";
+    str_to_sign="PUT\n\napplication/octet-stream\n${dt_val}\n/${5}";
+    signature="$(echo -en "${str_to_sign}" | openssl sha1 -hmac "${4}" -binary | base64)";
 
     response_code="$(curl \
                         --location \
@@ -223,10 +226,10 @@ function oldcurl_put_data_to_s3() {
                         --header "Host: ${1}" \
                         --header "Date: ${dt_val}" \
                         --header 'Content-Type: application/octet-stream' \
-                        --header "Authorization: AWS ${2}:${signature}" \
+                        --header "Authorization: AWS ${3}:${signature}" \
                         --write-out "%{http_code}" \
-                        --upload-file "${5}" \
-                        --url "https://${1}/${4}";)";
+                        --upload-file "${6}" \
+                        --url "https://${1}:${2}/${5}";)";
 
     if [ "${response_code}" == "200" ]; 
     then {
@@ -247,18 +250,19 @@ function curl_get_data_from_s3() {
     # DESCR: Perform HTTP GET on S3, and saves result locally
     # ARGS:
     #    (1) - S3 FQDN
-    #    (2) - Access key ID
-    #    (3) - Secret key
-    #    (4) - AWS sign string
-    #    (5) - Object name (with bucket)
-    #    (6) - Local file name (optional)
+    #    (2) - S3 destination port
+    #    (3) - Access key ID
+    #    (4) - Secret key
+    #    (5) - AWS sign string
+    #    (6) - Object name (with bucket)
+    #    (7) - Local file name (optional)
     ############################################################
 
     logger --id --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[${STR_NAME}]: curl_get_data_from_s3, func called with args(${#}): [${*}].";
 
     declare response_code="";
 
-    if [ -z "${6}" ]; 
+    if [ -z "${7}" ]; 
     then {
         logger --id --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[${STR_NAME}]: curl_get_data_from_s3, Argument \'local path\' is not set. Downloaded data will be saved with s3-object name.";
         response_code="$(curl \
@@ -267,23 +271,23 @@ function curl_get_data_from_s3() {
                            --remote-name \
                            --request 'GET' \
                            --header 'Content-Type: application/octet-stream' \
-                           --aws-sigv4 "${4}" \
-                           --user "${2}:${3}" \
+                           --aws-sigv4 "${5}" \
+                           --user "${3}:${4}" \
                            --write-out "%{response_code}" \
-                           --url "https://${1}/${5}";)";
+                           --url "https://${1}/${6}";)";
     }
     else {
         logger --id --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[${STR_NAME}]: curl_get_data_from_s3, Argument \'local path\' is set. Downloaded data will be saved as ${6}.";
         response_code="$(curl \
                            --location \
                            --silent \
-                           --output "${6}" \
+                           --output "${7}" \
                            --request 'GET' \
                            --header 'Content-Type: application/octet-stream' \
-                           --aws-sigv4 "${4}" \
-                           --user "${2}:${3}" \
+                           --aws-sigv4 "${5}" \
+                           --user "${3}:${4}" \
                            --write-out "%{response_code}" \
-                           --url "https://${1}/${5}";)";
+                           --url "https://${1}:${2}/${6}";)";
     }
     fi;
 
@@ -306,10 +310,11 @@ function curl_head_data_from_s3() {
     # DESCR: Perform HTTP GET on S3, and saves result locally
     # ARGS:
     #    (1) - S3 FQDN
-    #    (2) - Access key ID
-    #    (3) - Secret key
-    #    (4) - AWS sign string
-    #    (5) - Object name (with bucket)
+    #    (2) - S3 destination port
+    #    (3) - Access key ID
+    #    (4) - Secret key
+    #    (5) - AWS sign string
+    #    (6) - Object name (with bucket)
     ############################################################
 
     logger --id --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[${STR_NAME}]: oldcurl_head_data_from_s3, func called with args(${#}): [${*}].";
@@ -322,9 +327,9 @@ function curl_head_data_from_s3() {
                     --silent \
                     --location \
                     --head \
-                    --aws-sigv4 "${4}" \
-                    --user "${2}:${3}" \
-                    --url "https://${1}/${5}" \
+                    --aws-sigv4 "${5}" \
+                    --user "${3}:${4}" \
+                    --url "https://${1}:${2}/${6}" \
                     --write-out "%{response_code},%header{content-length}";)";
     response_code=$(echo "${response}" | tail --lines 1 | cut --delimiter=',' --fields=1;);
     cont_len=$(echo "${response}" | tail --lines 1 | cut --delimiter=',' --fields=2;);
@@ -332,7 +337,7 @@ function curl_head_data_from_s3() {
     if [ "${response_code}" == "200" ]; 
     then {
         logger --id --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[${STR_NAME}]: curl_head_data_from_s3, Response code: ${response_code}. Request executed successfully.";
-        logger --id --rfc5424 --stderr --tag 'info' --priority 'local7.info' -- "[${STR_NAME}]: curl_head_data_from_s3, Object ${5} exists and has length ${cont_len} bytes."
+        logger --id --rfc5424 --stderr --tag 'info' --priority 'local7.info' -- "[${STR_NAME}]: curl_head_data_from_s3, Object ${6} exists and has length ${cont_len} bytes."
         logger --id --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[${STR_NAME}]: curl_head_data_from_s3, Function exited with code 0.";
         return 0;
     }
@@ -354,32 +359,33 @@ function curl_put_data_to_s3() {
     # DESCR: Perform HTTP PUT on S3, and saves result locally
     # ARGS:
     #    (1) - S3 FQDN
-    #    (2) - Access key ID
-    #    (3) - Secret key
-    #    (4) - AWS sign string
-    #    (5) - Object name (with bucket)
-    #    (6) - Local file name 
+    #    (2) - S3 destination port
+    #    (3) - Access key ID
+    #    (4) - Secret key
+    #    (5) - AWS sign string
+    #    (6) - Object name (with bucket)
+    #    (7) - Local file name
     ############################################################
 
     logger --id --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[${STR_NAME}]: curl_put_data_from_s3, func called with args(${#}): [${*}].";
     # dt_val, signature, str_to_sign - variables from global scope
     declare response_code="";
 
-    if [ -z "${5}" ]; 
+    if [ -z "${7}" ]; 
     then {
-        logger --id --rfc5424 --stderr --tag 'error' --priority 'local7.error' -- "[${STR_NAME}]: curl_put_data_from_s3, file name not set: \'${6}\'.";
+        logger --id --rfc5424 --stderr --tag 'error' --priority 'local7.error' -- "[${STR_NAME}]: curl_put_data_from_s3, file name not set: \'${7}\'.";
         return 1;
     }
     fi;
-    if [ ! -f "${5}" ]; 
+    if [ ! -f "${7}" ]; 
     then {
-        logger --id --rfc5424 --stderr --tag 'error' --priority 'local7.error' -- "[${STR_NAME}]: curl_put_data_from_s3, file \'${6}\' does not exist!";
+        logger --id --rfc5424 --stderr --tag 'error' --priority 'local7.error' -- "[${STR_NAME}]: curl_put_data_from_s3, file \'${7}\' does not exist!";
         return 1; 
     }
     fi;
-    if [ ! -r "${5}" ]; 
+    if [ ! -r "${7}" ]; 
     then {
-        logger --id --rfc5424 --stderr --tag 'error' --priority 'local7.error' -- "[${STR_NAME}]: curl_put_data_from_s3, file \'${6}\' is not readable!";
+        logger --id --rfc5424 --stderr --tag 'error' --priority 'local7.error' -- "[${STR_NAME}]: curl_put_data_from_s3, file \'${7}\' is not readable!";
         return 1;
     }
     fi;
@@ -389,11 +395,11 @@ function curl_put_data_to_s3() {
                          --silent \
                          --request 'PUT' \
                          --header 'Content-Type: application/octet-stream' \
-                         --aws-sigv4 "${4}" \
-                         --user "${2}:${3}" \
+                         --aws-sigv4 "${5}" \
+                         --user "${3}:${4}" \
                          --write-out "%{response_code}" \
-                         --upload-file "${6}" \
-                         --url "https://${1}/${5}";)";
+                         --upload-file "${7}" \
+                         --url "https://${1}:${2}/${6}";)";
 
     if [ "${response_code}" == "200" ]; 
     then {
@@ -414,10 +420,11 @@ function wget_get_data_from_s3() {
     # DESCR: Perform HTTP GET on S3, and saves result locally
     # ARGS:
     #    (1) - S3 FQDN
-    #    (2) - Access key ID
-    #    (3) - Secret key
-    #    (4) - Object name (with bucket)
-    #    (5) - Local file name (optional)
+    #    (2) - S3 destination port
+    #    (3) - Access key ID
+    #    (4) - Secret key
+    #    (5) - Object name (with bucket)
+    #    (6) - Local file name (optional)
     ############################################################
 
     logger --id --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[${STR_NAME}]: wget_get_data_from_s3, func called with args(${#}): [${*}].";
@@ -425,10 +432,10 @@ function wget_get_data_from_s3() {
     declare response_code="";
 
     dt_val="$(date -R)";
-    str_to_sign="GET\n\napplication/octet-stream\n${dt_val}\n/${4}";
-    signature="$(echo -en "${str_to_sign}" | openssl sha1 -hmac "${3}" -binary | base64 -)";
+    str_to_sign="GET\n\napplication/octet-stream\n${dt_val}\n/${5}";
+    signature="$(echo -en "${str_to_sign}" | openssl sha1 -hmac "${4}" -binary | base64 -)";
 
-    if [ -z "${5}" ];
+    if [ -z "${6}" ];
     then {
         response_code="$(wget \
                             --quiet \
@@ -438,8 +445,8 @@ function wget_get_data_from_s3() {
                             --method='GET' \
                             --header="Date: ${dt_val}" \
                             --header='Content-Type: application/octet-stream' \
-                            --header="Authorization: AWS ${2}:${signature}" \
-                            "https://${1}/${4}" \
+                            --header="Authorization: AWS ${3}:${signature}" \
+                            "https://${1}/${5}" \
                         2>&1 |\
                         awk -F' ' '/HTTP\/[0-9.]+/{print $2}';)";
     }
@@ -452,9 +459,9 @@ function wget_get_data_from_s3() {
                             --method='GET' \
                             --header="Date: ${dt_val}" \
                             --header='Content-Type: application/octet-stream' \
-                            --header="Authorization: AWS ${2}:${signature}" \
-                            --output-document="${5}" \
-                            "https://${1}/${4}" \
+                            --header="Authorization: AWS ${3}:${signature}" \
+                            --output-document="${6}" \
+                            "https://${1}:${2}/${5}" \
                         2>&1 |\
                         awk -F' ' '/HTTP\/[0-9.]+/{print $2}';)";
     }
@@ -479,9 +486,10 @@ function wget_head_data_from_s3() {
     # DESCR: Perform HTTP HEAD on S3
     # ARGS:
     #    (1) - S3 FQDN
-    #    (2) - Access key ID
-    #    (3) - Secret key
-    #    (4) - Object name (with bucket)
+    #    (2) - S3 destination port
+    #    (3) - Access key ID
+    #    (4) - Secret key
+    #    (5) - Object name (with bucket)
     ############################################################
 
     logger --id --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[${STR_NAME}]: wget_head_data_from_s3, func called with args(${#}): [${*}].";
@@ -491,8 +499,8 @@ function wget_head_data_from_s3() {
     declare cont_len='';
 
     dt_val="$(date -R)";
-    str_to_sign="HEAD\n\napplication/octet-stream\n${dt_val}\n/${4}";
-    signature="$(echo -en "${str_to_sign}" | openssl sha1 -hmac "${3}" -binary | base64 - )";
+    str_to_sign="HEAD\n\napplication/octet-stream\n${dt_val}\n/${5}";
+    signature="$(echo -en "${str_to_sign}" | openssl sha1 -hmac "${4}" -binary | base64 - )";
 
     response_code="$(wget \
                         --quiet \
@@ -503,15 +511,15 @@ function wget_head_data_from_s3() {
                         --method='HEAD' \
                         --header="Date: ${dt_val}" \
                         --header='Content-Type: application/octet-stream' \
-                        --header="Authorization: AWS ${2}:${signature}" \
-                        "https://${1}/${4}" \
+                        --header="Authorization: AWS ${3}:${signature}" \
+                        "https://${1}:${2}/${5}" \
                     2>&1 |\
                     awk -F' ' '/HTTP\/[0-9.]+/{print $2}';)";
 
     if [ "${response_code}" == "200" ]; 
     then {
         logger --id --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[$STR_NAME]: wget_head_data_from_s3, Response code: ${response_code}. Request executed successfully.";
-        logger --id --rfc5424 --stderr --tag 'info' --priority 'local7.info' -- "[$STR_NAME]: wget_head_data_from_s3, Object ${4} exists."
+        logger --id --rfc5424 --stderr --tag 'info' --priority 'local7.info' -- "[$STR_NAME]: wget_head_data_from_s3, Object ${5} exists."
         logger --id --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[$STR_NAME]: wget_head_data_from_s3, Function exited with code 0.";
         return 0;
     }
@@ -535,38 +543,39 @@ function wget_put_data_to_s3() {
     # DESCR: Perform HTTP PUT on S3, and saves result locally
     # ARGS:
     #    (1) - S3 FQDN
-    #    (2) - Access key ID
-    #    (3) - Secret key
-    #    (4) - Object name (with bucket)
-    #    (5) - Local file name 
+    #    (2) - S3 destination port
+    #    (3) - Access key ID
+    #    (4) - Secret key
+    #    (5) - Object name (with bucket)
+    #    (6) - Local file name
     ############################################################
 
     logger --id --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[${STR_NAME}]: wget_put_data_to_s3, func called with args(${#}): [${*}].";
     # dt_val, signature, str_to_sign - variables from global scope
     declare response_code='';
 
-    if [ -z "${5}" ]; 
+    if [ -z "${6}" ]; 
     then {
-        logger --id --rfc5424 --stderr --tag 'error' --priority 'local7.error' -- "[${STR_NAME}]: wget_put_data_to_s3, file name not set: \'${5}\'.";
+        logger --id --rfc5424 --stderr --tag 'error' --priority 'local7.error' -- "[${STR_NAME}]: wget_put_data_to_s3, file name not set: \'${6}\'.";
         return 1;
     }
     fi;
-    if [ ! -f "${5}" ]; 
+    if [ ! -f "${6}" ]; 
     then {
-        logger --id --rfc5424 --stderr --tag 'error' --priority 'local7.error' -- "[${STR_NAME}]: wget_put_data_to_s3, file \'${5}\' does not exist!";
+        logger --id --rfc5424 --stderr --tag 'error' --priority 'local7.error' -- "[${STR_NAME}]: wget_put_data_to_s3, file \'${6}\' does not exist!";
         return 1; 
     }
     fi;
-    if [ ! -r "${5}" ]; 
+    if [ ! -r "${6}" ]; 
     then {
-        logger --id --rfc5424 --stderr --tag 'error' --priority 'local7.error' -- "[${STR_NAME}]: wget_put_data_to_s3, file \'${5}\' is not readable!";
+        logger --id --rfc5424 --stderr --tag 'error' --priority 'local7.error' -- "[${STR_NAME}]: wget_put_data_to_s3, file \'${6}\' is not readable!";
         return 1;
     }
     fi;
 
     dt_val="$(date -R)";
-    str_to_sign="PUT\n\napplication/octet-stream\n${dt_val}\n/${4}";
-    signature="$(echo -en "${str_to_sign}" | openssl sha1 -hmac "${3}" -binary | base64)";
+    str_to_sign="PUT\n\napplication/octet-stream\n${dt_val}\n/${5}";
+    signature="$(echo -en "${str_to_sign}" | openssl sha1 -hmac "${4}" -binary | base64)";
 
     response_code="$(wget \
                         --quiet \
@@ -576,10 +585,10 @@ function wget_put_data_to_s3() {
                         --method='PUT' \
                         --header="Date: ${dt_val}" \
                         --header='Content-Type: application/octet-stream' \
-                        --header="Contetn-Length: $(wc --bytes < "${5}")" \
-                        --header="Authorization: AWS ${2}:${signature}" \
-                        --body-file="${5}" \
-                        "https://${1}/${4}" \
+                        --header="Contetn-Length: $(wc --bytes < "${6}")" \
+                        --header="Authorization: AWS ${3}:${signature}" \
+                        --body-file="${6}" \
+                        "https://${1}:${2}/${5}" \
                     2>&1 |\
                     awk -F' ' '/HTTP\/[0-9.]+/{print $2}';)";
 
@@ -602,14 +611,15 @@ function openssl_get_data_from_s3() {
     # DESCR: Perform HTTP GET on S3, and saves result locally
     # ARGS:
     #    (1) - S3 FQDN
-    #    (2) - Access key ID
-    #    (3) - Secret key
-    #    (4) - Object name (with bucket)
-    #    (5) - Local file name
+    #    (2) - S3 destination port
+    #    (3) - Access key ID
+    #    (4) - Secret key
+    #    (5) - Object name (with bucket)
+    #    (6) - Local file name
     ############################################################
 
     logger --id --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[${STR_NAME}]: openssl_get_data_from_s3, func called with args(${#}): [${*}].";
-    if [ -z "${5}" ]; 
+    if [ -z "${6}" ]; 
     then {
         logger --id --rfc5424 --stderr --tag 'warning' --priority 'local7.warning' -- "[${STR_NAME}]: openssl_get_data_from_s3, local file name not provided, cannot proceed, exiting.";
         return 0;
@@ -626,13 +636,13 @@ function openssl_get_data_from_s3() {
     declare header_user_agent="User-Agent: $(openssl --version 2>&1 | cut --delimiter=' ' --fields='1,2' --output-delimiter='/')";
 
     dt_val="$(date -R)";
-    str_to_sign="GET\n\napplication/octet-stream\n${dt_val}\n/${4}";
-    signature="$(echo -en "${str_to_sign}" | openssl sha1 -hmac "${3}" -binary | base64 -)";
+    str_to_sign="GET\n\napplication/octet-stream\n${dt_val}\n/${5}";
+    signature="$(echo -en "${str_to_sign}" | openssl sha1 -hmac "${4}" -binary | base64 -)";
 
-    query_line="GET /${4} HTTP/1.1";
+    query_line="GET /${5} HTTP/1.1";
     header_host="Host: ${1}";
     header_date="Date: ${dt_val}";
-    header_authorization="Authorization: AWS ${2}:${signature}";
+    header_authorization="Authorization: AWS ${3}:${signature}";
     
     (printf "${query_line}\r\n";
      printf "${header_accept}\r\n";
@@ -645,17 +655,17 @@ function openssl_get_data_from_s3() {
     openssl s_client \
         -quiet \
         -ign_eof \
-        -connect "${1}:443" > "${5}.tmp";
+        -connect "${1}:${2}" > "${6}.tmp";
 
-    response_code=$(head --silent --lines=1 "${5}.tmp" | awk -F' ' '/HTTP\/[0-9.]+/{print $2}';);
+    response_code=$(head --silent --lines=1 "${6}.tmp" | awk -F' ' '/HTTP\/[0-9.]+/{print $2}';);
     
     if [ "${response_code}" == "200" ]; 
     then {
         logger --id --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[${STR_NAME}]: openssl_get_data_from_s3, Response code: ${response_code}. Request executed successfully.";
         logger --id --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[${STR_NAME}]: openssl_get_data_from_s3, Processing recieved object...";
         logger --id --rfc5424 --stderr --tag 'info' --priority 'local7.info' -- "[${STR_NAME}]: openssl_get_data_from_s3, Might work incorrectly with binary types!";
-        tr -d '\r' < "${5}.tmp" | sed '1,/^$/d' > "${5}";
-        rm "${5}.tmp";
+        tr -d '\r' < "${6}.tmp" | sed '1,/^$/d' > "${6}";
+        rm "${6}.tmp";
         logger --id --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[${STR_NAME}]: openssl_get_data_from_s3, Object processed.";
         logger --id --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[${STR_NAME}]: openssl_get_data_from_s3, Function exited with code 0.";
         return 0;
@@ -675,9 +685,10 @@ function openssl_head_data_from_s3() {
     # DESCR: Perform HTTP HEAD on S3
     # ARGS:
     #    (1) - S3 FQDN
-    #    (2) - Access key ID
-    #    (3) - Secret key
-    #    (4) - Object name (with bucket)
+    #    (2) - S3 destination port
+    #    (3) - Access key ID
+    #    (4) - Secret key
+    #    (5) - Object name (with bucket)
     ############################################################
 
     logger --id --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[${STR_NAME}]: openssl_head_data_from_s3, func called with args(${#}): [${*}].";
@@ -693,13 +704,13 @@ function openssl_head_data_from_s3() {
     declare header_user_agent="User-Agent: $(openssl --version 2>&1 | cut --delimiter=' ' --fields='1,2' --output-delimiter='/')";
 
     dt_val="$(date -R)";
-    str_to_sign="HEAD\n\napplication/octet-stream\n${dt_val}\n/${4}";
-    signature="$(echo -en "${str_to_sign}" | openssl sha1 -hmac "${3}" -binary | base64 -)";
+    str_to_sign="HEAD\n\napplication/octet-stream\n${dt_val}\n/${5}";
+    signature="$(echo -en "${str_to_sign}" | openssl sha1 -hmac "${4}" -binary | base64 -)";
 
-    query_line="HEAD /${4} HTTP/1.1";
+    query_line="HEAD /${5} HTTP/1.1";
     header_host="Host: ${1}";
     header_date="Date: ${dt_val}";
-    header_authorization="Authorization: AWS ${2}:${signature}";
+    header_authorization="Authorization: AWS ${3}:${signature}";
     
     response_code="$((printf "${query_line}\r\n";
                       printf "${header_accept}\r\n";
@@ -713,14 +724,14 @@ function openssl_head_data_from_s3() {
                      openssl s_client \
                         -quiet \
                         -ign_eof \
-                        -connect "${1}:443" |\
+                        -connect "${1}:${2}" |\
                      head --silent --lines=1 - |\
                      awk -F' ' '/HTTP\/[0-9.]+/{print $2}';)";
 
     if [ "${response_code}" == "200" ]; 
     then {
         logger --id --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[$STR_NAME]: openssl_head_data_from_s3, Response code: ${response_code}. Request executed successfully.";
-        logger --id --rfc5424 --stderr --tag 'info' --priority 'local7.info' -- "[$STR_NAME]: openssl_head_data_from_s3, Object ${4} exists."
+        logger --id --rfc5424 --stderr --tag 'info' --priority 'local7.info' -- "[$STR_NAME]: openssl_head_data_from_s3, Object ${5} exists."
         logger --id --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[$STR_NAME]: openssl_head_data_from_s3, Function exited with code 0.";
         return 0;
     }
@@ -745,10 +756,11 @@ function openssl_put_data_to_s3() {
     # DESCR: Perform HTTP PUT on S3, and saves result locally
     # ARGS:
     #    (1) - S3 FQDN
-    #    (2) - Access key ID
-    #    (3) - Secret key
-    #    (4) - Object name (with bucket)
-    #    (5) - Local file name 
+    #    (2) - S3 destination port
+    #    (3) - Access key ID
+    #    (4) - Secret key
+    #    (5) - Object name (with bucket)
+    #    (6) - Local file name
     ############################################################
 
     logger --id --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[${STR_NAME}]: openssl_put_data_to_s3, func called with args(${#}): [${*}].";
@@ -763,21 +775,21 @@ function openssl_put_data_to_s3() {
     declare header_accept='Accept: */*';
     declare header_user_agent="User-Agent: $(openssl --version 2>&1 | cut --delimiter=' ' --fields='1,2' --output-delimiter='/')";
 
-    if [ -z "${5}" ]; 
+    if [ -z "${6}" ]; 
     then {
-        logger --id --rfc5424 --stderr --tag 'error' --priority 'local7.error' -- "[${STR_NAME}]: openssl_put_data_to_s3, file name not set: \'${5}\'.";
+        logger --id --rfc5424 --stderr --tag 'error' --priority 'local7.error' -- "[${STR_NAME}]: openssl_put_data_to_s3, file name not set: \'${6}\'.";
         return 1;
     }
     fi;
-    if [ ! -f "${5}" ]; 
+    if [ ! -f "${6}" ]; 
     then {
-        logger --id --rfc5424 --stderr --tag 'error' --priority 'local7.error' -- "[${STR_NAME}]: openssl_put_data_to_s3, file \'${5}\' does not exist!";
+        logger --id --rfc5424 --stderr --tag 'error' --priority 'local7.error' -- "[${STR_NAME}]: openssl_put_data_to_s3, file \'${6}\' does not exist!";
         return 1; 
     }
     fi;
-    if [ ! -r "${5}" ]; 
+    if [ ! -r "${6}" ]; 
     then {
-        logger --id --rfc5424 --stderr --tag 'error' --priority 'local7.error' -- "[${STR_NAME}]: openssl_put_data_to_s3, file \'${5}\' is not readable!";
+        logger --id --rfc5424 --stderr --tag 'error' --priority 'local7.error' -- "[${STR_NAME}]: openssl_put_data_to_s3, file \'${6}\' is not readable!";
         return 1;
     }
     fi;
@@ -786,11 +798,11 @@ function openssl_put_data_to_s3() {
     str_to_sign="PUT\n\napplication/octet-stream\n${dt_val}\n/${4}";
     signature="$(echo -en "${str_to_sign}" | openssl sha1 -hmac "${3}" -binary | base64 -)";
 
-    query_line="PUT /${4} HTTP/1.1";
+    query_line="PUT /${5} HTTP/1.1";
     header_host="Host: ${1}";
     header_date="Date: ${dt_val}";
-    header_authorization="Authorization: AWS ${2}:${signature}";
-    header_content_len="Content-Length: $(wc --bytes < "${5}")";
+    header_authorization="Authorization: AWS ${3}:${signature}";
+    header_content_len="Content-Length: $(wc --bytes < "${6}")";
 
     (printf "${query_line}\r\n";
      printf "${header_accept}\r\n";
@@ -801,12 +813,12 @@ function openssl_put_data_to_s3() {
      printf "${header_user_agent}\r\n";
      printf "${header_authorization}\r\n";
      printf "\r\n";
-     cat "${5}";) |\
+     cat "${6}";) |\
     openssl s_client \
         -quiet \
-        -connect "${1}:443" > "${5}.tmp";
+        -connect "${1}:${2}" > "${6}.tmp";
 
-    response_code=$(head --silent --lines=1 "${5}.tmp" | awk -F' ' '/HTTP\/[0-9.]+/{print $2}';); 
+    response_code=$(head --silent --lines=1 "${6}.tmp" | awk -F' ' '/HTTP\/[0-9.]+/{print $2}';); 
 
     if [ "${response_code}" == "200" ]; 
     then {
@@ -826,37 +838,38 @@ function netcat_get_data_from_s3() {
     # DESCR: Perform HTTP GET on S3, and saves result locally
     # ARGS:
     #    (1) - S3 FQDN
-    #    (2) - Access key ID
-    #    (3) - Secret key
-    #    (4) - Object name (with bucket)
-    #    (5) - Local file name (optional)
+    #    (2) - S3 destination port
+    #    (3) - Access key ID
+    #    (4) - Secret key
+    #    (5) - Object name (with bucket)
+    #    (6) - Local file name (optional)
     ############################################################
 
     logger --id --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[${STR_NAME}]: netcat_get_data_from_s3, func called with args(${#}): [${*}].";
     logger --id --rfc5424 --tag 'warning' --stderr --priority 'local7.warning' -- "[${STR_NAME}]: netcat_get_data_from_s3, this method can only implement bare HTTP, no security supported.";
     # dt_val, signature, str_to_sign - variables from global scope
     declare response_code="";
-    declare query_line=""
-    declare header_host="";
-    declare header_content_type="Content-Type: application/octet-stream";
-    declare header_date="";
-    declare header_authorization="";
-    declare header_accept="Accept: */*";
-    declare header_user_agent="User-Agent: netcat/v1.10-50";
+    declare query_line=''
+    declare header_host='';
+    declare header_content_type='Content-Type: application/octet-stream';
+    declare header_date='';
+    declare header_authorization='';
+    declare header_accept='Accept: */*';
+    declare header_user_agent='User-Agent: netcat/v1.10-50';
 
     dt_val="$(date -R)";
-    str_to_sign="GET\n\napplication/octet-stream\n${dt_val}\n/${4}";
-    signature="$(echo -en "${str_to_sign}" | openssl sha1 -hmac "${3}" -binary | base64 -)";
+    str_to_sign="GET\n\napplication/octet-stream\n${dt_val}\n/${5}";
+    signature="$(echo -en "${str_to_sign}" | openssl sha1 -hmac "${4}" -binary | base64 -)";
 
-    if [ -z "${5}" ];
+    if [ -z "${6}" ];
     then {
-        query_line="GET /${4} HTTP/1.1";
+        query_line="GET /${5} HTTP/1.1";
         header_host="Host: ${1}";
         header_date="Date: ${dt_val}";
-        header_authorization="Authorization: AWS ${2}:${signature}";
+        header_authorization="Authorization: AWS ${3}:${signature}";
         
         response_code="$(echo -en "${query_line}\n${header_host}\n${header_date}\n${header_content_type}\n${header_authorization}\n\n" |\
-                         netcat -v -v "${1}" 443;)";
+                         netcat -v -v "${1}" "${2}";)";
     }
     else {
         response_code="$()";
@@ -882,9 +895,10 @@ function netcat_head_data_from_s3() {
     # DESCR: Perform HTTP HEAD on S3
     # ARGS:
     #    (1) - S3 FQDN
-    #    (2) - Access key ID
-    #    (3) - Secret key
-    #    (4) - Object name (with bucket)
+    #    (2) - S3 destination port
+    #    (3) - Access key ID
+    #    (4) - Secret key
+    #    (5) - Object name (with bucket)
     ############################################################
 
     logger --id --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[${STR_NAME}]: netcat_head_data_from_s3, func called with args(${#}): [${*}].";
@@ -902,13 +916,13 @@ function netcat_head_data_from_s3() {
     declare header_user_agent="User-Agent: netcat/v1.10-50";
 
     dt_val="$(date -R)";
-    str_to_sign="GET\n\napplication/octet-stream\n${dt_val}\n/${4}";
-    signature="$(echo -en "${str_to_sign}" | openssl sha1 -hmac "${3}" -binary | base64 -)";
+    str_to_sign="GET\n\napplication/octet-stream\n${dt_val}\n/${5}";
+    signature="$(echo -en "${str_to_sign}" | openssl sha1 -hmac "${4}" -binary | base64 -)";
 
-    query_line="GET /${4} HTTP/1.1";
+    query_line="GET /${5} HTTP/1.1";
     header_host="Host: ${1}";
     header_date="Date: ${dt_val}";
-    header_authorization="Authorization: AWS ${2}:${signature}";
+    header_authorization="Authorization: AWS ${3}:${signature}";
 
     response_code="$((printf "${query_line}\r\n";
                       printf "${header_accept}\r\n";
@@ -919,14 +933,14 @@ function netcat_head_data_from_s3() {
                       printf "${header_user_agent}\r\n";
                       printf "${header_authorization}\r\n";
                       printf "\r\n";) |\
-                     netcat -v -v "${1}" 9000 | head --silent --lines=1 - |\
+                     netcat -v -v "${1}" "${2}" | head --silent --lines=1 - |\
                      head --silent --lines=1 - |\
                      awk -F' ' '/HTTP\/[0-9.]+/{print $2}';)";
 
     if [ "${response_code}" == "200" ]; 
     then {
         logger --id --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[$STR_NAME]: wget_head_data_from_s3, Response code: ${response_code}. Request executed successfully.";
-        logger --id --rfc5424 --stderr --tag 'info' --priority 'local7.info' -- "[$STR_NAME]: wget_head_data_from_s3, Object ${4} exists."
+        logger --id --rfc5424 --stderr --tag 'info' --priority 'local7.info' -- "[$STR_NAME]: wget_head_data_from_s3, Object ${5} exists."
         logger --id --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[$STR_NAME]: wget_head_data_from_s3, Function exited with code 0.";
         return 0;
     }
@@ -949,10 +963,11 @@ function netcat_put_data_to_s3() {
     # DESCR: Perform HTTP PUT on S3, and saves result locally
     # ARGS:
     #    (1) - S3 FQDN
-    #    (2) - Access key ID
-    #    (3) - Secret key
-    #    (4) - Object name (with bucket)
-    #    (5) - Local file name 
+    #    (2) - S3 destination port
+    #    (3) - Access key ID
+    #    (4) - Secret key
+    #    (5) - Object name (with bucket)
+    #    (6) - Local file name
     ############################################################
 
     logger --id --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[${STR_NAME}]: netcat_put_data_to_s3, func called with args(${#}): [${*}].";
@@ -960,21 +975,21 @@ function netcat_put_data_to_s3() {
 
     declare response_code='';
 
-    if [ -z "${5}" ]; 
+    if [ -z "${6}" ]; 
     then {
-        logger --id --rfc5424 --stderr --tag 'error' --priority 'local7.error' -- "[${STR_NAME}]: wget_put_data_to_s3, file name not set: \'${5}\'.";
+        logger --id --rfc5424 --stderr --tag 'error' --priority 'local7.error' -- "[${STR_NAME}]: wget_put_data_to_s3, file name not set: \'${6}\'.";
         return 1;
     }
     fi;
-    if [ ! -f "${5}" ]; 
+    if [ ! -f "${6}" ]; 
     then {
-        logger --id --rfc5424 --stderr --tag 'error' --priority 'local7.error' -- "[${STR_NAME}]: wget_put_data_to_s3, file \'${5}\' does not exist!";
+        logger --id --rfc5424 --stderr --tag 'error' --priority 'local7.error' -- "[${STR_NAME}]: wget_put_data_to_s3, file \'${6}\' does not exist!";
         return 1; 
     }
     fi;
-    if [ ! -r "${5}" ]; 
+    if [ ! -r "${6}" ]; 
     then {
-        logger --id --rfc5424 --stderr --tag 'error' --priority 'local7.error' -- "[${STR_NAME}]: wget_put_data_to_s3, file \'${5}\' is not readable!";
+        logger --id --rfc5424 --stderr --tag 'error' --priority 'local7.error' -- "[${STR_NAME}]: wget_put_data_to_s3, file \'${6}\' is not readable!";
         return 1;
     }
     fi;
@@ -1210,7 +1225,7 @@ function print_help() {
     echo -e "\t-l <target local file name> : (optional) set desired local file to interact with. Set as absolute path. Example: /absolute/path/to/file[.ext]. May be ommitted in GET request.";
     echo -e "\t-h : call this help.";
     echo -e "\tExample: ${0} -b OLDCURL -r GET -f s3.storage.ru -a myaccesskeytos3 -s mysecretkeytos3 -o bucket/target/object/name";
-    echo -e "\tExample: ${0} -b WGET -r PUT -f s3.storage.ru -a myaccesskeytos3 -s mysecretkeytos3 -o bucket/target/object/name -l /path/to/upload/file";
+    echo -e "\tExample: ${0} -b WGET -r PUT -f s3.storage.ru -p 9000 -a myaccesskeytos3 -s mysecretkeytos3 -o bucket/target/object/name -l /path/to/upload/file";
 }
 
 # Program start
@@ -1292,23 +1307,23 @@ case "${req}" in
     'GET')
         case "${backend}" in
             'OLDCURL')
-                oldcurl_get_data_from_s3 "${fqdn}" "${key_id}" "${key_s}" "${obj}" "${local_path}";
+                oldcurl_get_data_from_s3 "${fqdn}" "${port}" "${key_id}" "${key_s}" "${obj}" "${local_path}";
                 method_result=${?};
                 ;;
             'CURL')
-                curl_get_data_from_s3 "${fqdn}" "${key_id}" "${key_s}" "${sigstring}" "${obj}" "${local_path}";
+                curl_get_data_from_s3 "${fqdn}" "${port}" "${key_id}" "${key_s}" "${sigstring}" "${obj}" "${local_path}";
                 method_result=${?};
                 ;;
             'WGET')
-                wget_get_data_from_s3 "${fqdn}" "${key_id}" "${key_s}" "${obj}" "${local_path}";
+                wget_get_data_from_s3 "${fqdn}" "${port}" "${key_id}" "${key_s}" "${obj}" "${local_path}";
                 method_result=${?};
                 ;;
             'OPENSSL')
-                openssl_get_data_from_s3 "${fqdn}" "${key_id}" "${key_s}" "${obj}" "${local_path}";
+                openssl_get_data_from_s3 "${fqdn}" "${port}" "${key_id}" "${key_s}" "${obj}" "${local_path}";
                 method_result=${?};
                 ;;
             'NETCAT')
-                netcat_get_data_from_s3 "${fqdn}" "${key_id}" "${key_s}" "${obj}" "${local_path}";
+                netcat_get_data_from_s3 "${fqdn}" "${port}" "${key_id}" "${key_s}" "${obj}" "${local_path}";
                 method_result=${?};
                 ;;
         esac;
@@ -1316,23 +1331,23 @@ case "${req}" in
     'HEAD')
         case "${backend}" in
             'OLDCURL')
-                oldcurl_head_data_from_s3 "${fqdn}" "${key_id}" "${key_s}" "${obj}";
+                oldcurl_head_data_from_s3 "${fqdn}" "${port}" "${key_id}" "${key_s}" "${obj}";
                 method_result=${?};
                 ;;
             'CURL')
-                curl_head_data_from_s3 "${fqdn}" "${key_id}" "${key_s}" "${sigstring}" "${obj}";
+                curl_head_data_from_s3 "${fqdn}" "${port}" "${key_id}" "${key_s}" "${sigstring}" "${obj}";
                 method_result=${?};
                 ;;
             'WGET')
-                wget_head_data_from_s3 "${fqdn}" "${key_id}" "${key_s}" "${obj}";
+                wget_head_data_from_s3 "${fqdn}" "${port}" "${key_id}" "${key_s}" "${obj}";
                 method_result=${?};
                 ;;
             'OPENSSL')
-                openssl_head_data_from_s3 "${fqdn}" "${key_id}" "${key_s}" "${obj}";
+                openssl_head_data_from_s3 "${fqdn}" "${port}" "${key_id}" "${key_s}" "${obj}";
                 method_result=${?};
                 ;;
             'NETCAT')
-                netcat_head_data_from_s3 "${fqdn}" "${key_id}" "${key_s}" "${obj}";
+                netcat_head_data_from_s3 "${fqdn}" "${port}" "${key_id}" "${key_s}" "${obj}";
                 method_result=${?};
                 ;;
         esac;
@@ -1340,23 +1355,23 @@ case "${req}" in
     'PUT')
         case "${backend}" in
             'OLDCURL')
-                oldcurl_put_data_to_s3 "${fqdn}" "${key_id}" "${key_s}" "${obj}" "${local_path}";
+                oldcurl_put_data_to_s3 "${fqdn}" "${port}" "${key_id}" "${key_s}" "${obj}" "${local_path}";
                 method_result=${?};
                 ;;
             'CURL')
-                curl_put_data_to_s3 "${fqdn}" "${key_id}" "${key_s}" "${sigstring}" "${obj}" "${local_path}";
+                curl_put_data_to_s3 "${fqdn}" "${port}" "${key_id}" "${key_s}" "${sigstring}" "${obj}" "${local_path}";
                 method_result=${?};
                 ;;
             'WGET')
-                wget_put_data_to_s3 "${fqdn}" "${key_id}" "${key_s}" "${obj}" "${local_path}";
+                wget_put_data_to_s3 "${fqdn}" "${port}" "${key_id}" "${key_s}" "${obj}" "${local_path}";
                 method_result=${?};
                 ;;
             'OPENSSL')
-                openssl_put_data_to_s3 "${fqdn}" "${key_id}" "${key_s}" "${obj}" "${local_path}";
+                openssl_put_data_to_s3 "${fqdn}" "${port}" "${key_id}" "${key_s}" "${obj}" "${local_path}";
                 method_result=${?};
                 ;;
             'NETCAT')
-                netcat_put_data_to_s3 "${fqdn}" "${key_id}" "${key_s}" "${obj}" "${local_path}";
+                netcat_put_data_to_s3 "${fqdn}" "${port}" "${key_id}" "${key_s}" "${obj}" "${local_path}";
                 method_result=${?};
                 ;;
         esac;
