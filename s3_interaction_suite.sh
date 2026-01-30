@@ -889,7 +889,60 @@ function netcat_head_data_from_s3() {
     logger --id --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[${STR_NAME}]: netcat_head_data_from_s3, func called with args(${#}): [${*}].";
     logger --id --rfc5424 --tag 'warning' --stderr --priority 'local7.warning' -- "[${STR_NAME}]: netcat_head_data_from_s3, this method can only implement bare HTTP, no security supported.";
 
-    return 1;
+    # dt_val, signature, str_to_sign - variables from global scope
+    declare response_code="";
+    declare query_line=""
+    declare header_host="";
+    declare header_connection='Connection: close';
+    declare header_content_type="Content-Type: application/octet-stream";
+    declare header_date="";
+    declare header_authorization="";
+    declare header_accept="Accept: */*";
+    declare header_user_agent="User-Agent: netcat/v1.10-50";
+
+    dt_val="$(date -R)";
+    str_to_sign="GET\n\napplication/octet-stream\n${dt_val}\n/${4}";
+    signature="$(echo -en "${str_to_sign}" | openssl sha1 -hmac "${3}" -binary | base64 -)";
+
+    query_line="GET /${4} HTTP/1.1";
+    header_host="Host: ${1}";
+    header_date="Date: ${dt_val}";
+    header_authorization="Authorization: AWS ${2}:${signature}";
+
+    response_code="$((printf "${query_line}\r\n";
+                      printf "${header_accept}\r\n";
+                      printf "${header_connection}\r\n";
+                      printf "${header_content_type}\r\n";
+                      printf "${header_date}\r\n";
+                      printf "${header_host}\r\n";
+                      printf "${header_user_agent}\r\n";
+                      printf "${header_authorization}\r\n";
+                      printf "\r\n";) |\
+                     netcat -v -v "${1}" 9000 | head --silent --lines=1 - |\
+                     head --silent --lines=1 - |\
+                     awk -F' ' '/HTTP\/[0-9.]+/{print $2}';)";
+        
+    #response_code="$(echo -en "${query_line}\n${header_host}\n${header_date}\n${header_content_type}\n${header_authorization}\n\n" | netcat -v -v "${1}" 9000;)";
+
+
+    if [ "${response_code}" == "200" ]; 
+    then {
+        logger --id --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[$STR_NAME]: wget_head_data_from_s3, Response code: ${response_code}. Request executed successfully.";
+        logger --id --rfc5424 --stderr --tag 'info' --priority 'local7.info' -- "[$STR_NAME]: wget_head_data_from_s3, Object ${4} exists."
+        logger --id --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[$STR_NAME]: wget_head_data_from_s3, Function exited with code 0.";
+        return 0;
+    }
+    elif [ "${response_code}" == "404" ]; 
+    then {
+        logger --id --rfc5424 --stderr --tag 'info' --priority 'local7.info' -- "[$STR_NAME]: wget_head_data_from_s3, Response code: ${response_code}. Requested object is missing on the resource.";
+        logger --id --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[$STR_NAME]: wget_head_data_from_s3, Function exited with code 0.";
+        return 0;
+    }
+    else {
+        logger --id --rfc5424 --stderr --tag 'warning' --priority 'local7.warning' -- "[$STR_NAME]: wget_head_data_from_s3,  Response code: ${response_code}. Something went wrong.";
+        return 1;
+    }
+    fi;
 }
 
 function netcat_put_data_to_s3() {
