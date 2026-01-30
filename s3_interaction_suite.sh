@@ -3,13 +3,12 @@
 ####
 # Name: S3 interaction suite
 # Description: Read meta, download objects from or upload to S3-compatible storage
-# Req: read-write access on current working directory, 
-#      cURL v7.64 and higher / wget / netcat - depends on choosen backend
+# Req: read-write access on current working directory
 
 
 # constants and variables declaration
 declare STR_NAME="$(basename "${0}")";
-declare STR_SHORT_O=":b:,r:,f:,S:,a:,s:,o:,l:,h";
+declare STR_SHORT_O=":b:,r:,f:,p:,S:,a:,s:,o:,l:,h";
 declare args_passed="";
 
 declare backend='OLDCURL';
@@ -1257,7 +1256,7 @@ fi;
 # agument processing
 while getopts "${STR_SHORT_O}" name; 
 do {
-    case "$name" in
+    case "${name}" in
         'a')  # s3 bucket access key
              key_id="${OPTARG}";
              ;;
