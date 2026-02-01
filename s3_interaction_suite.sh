@@ -746,8 +746,6 @@ function openssl_head_data_from_s3() {
         return 1;
     }
     fi;
-
-    return 0;
 }
 
 function openssl_put_data_to_s3() {
