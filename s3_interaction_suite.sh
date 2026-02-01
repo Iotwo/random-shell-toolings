@@ -983,6 +983,14 @@ function netcat_put_data_to_s3() {
     logger --id --rfc5424 --tag 'warning' --stderr --priority 'local7.warning' -- "[${STR_NAME}]: netcat_put_data_to_s3, this method can only implement bare HTTP, no security supported.";
 
     declare response_code='';
+    declare query_line='';
+    declare header_host='';
+    declare header_content_len=0;
+    declare header_content_type='Content-Type: application/octet-stream';
+    declare header_date='';
+    declare header_authorization='';
+    declare header_accept='Accept: */*';
+    declare header_user_agent='User-Agent: netcat/v1.10-50';
 
     if [ -z "${6}" ]; 
     then {
