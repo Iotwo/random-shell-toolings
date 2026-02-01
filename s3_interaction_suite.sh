@@ -662,15 +662,18 @@ function openssl_get_data_from_s3() {
     then {
         logger --id --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[${STR_NAME}]: openssl_get_data_from_s3, Response code: ${response_code}. Request executed successfully.";
         logger --id --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[${STR_NAME}]: openssl_get_data_from_s3, Processing recieved object...";
-        logger --id --rfc5424 --stderr --tag 'info' --priority 'local7.info' -- "[${STR_NAME}]: openssl_get_data_from_s3, Might work incorrectly with binary types!";
+        logger --id --rfc5424 --stderr --tag 'info' --priority 'local7.info' -- "[${STR_NAME}]: openssl_get_data_from_s3, might work incorrectly with binary types!";
         tr -d '\r' < "${6}.tmp" | sed '1,/^$/d' > "${6}";
-        rm "${6}.tmp";
-        logger --id --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[${STR_NAME}]: openssl_get_data_from_s3, Object processed.";
+        logger --id --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[${STR_NAME}]: openssl_get_data_from_s3, object processed.";
+        logger --id --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[${STR_NAME}]: openssl_get_data_from_s3, performing cleanup, removing ${6}.";
+        rm -f "${6}.tmp";
         logger --id --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[${STR_NAME}]: openssl_get_data_from_s3, Function exited with code 0.";
         return 0;
     }
     else {
         logger --id --rfc5424 --stderr --tag 'warning' --priority 'local7.warning' -- "[${STR_NAME}]: openssl_get_data_from_s3,  Response code: ${response_code}. Something went wrong.";
+        cat "${6}.tmp";
+        rm -f "${6}.tmp";
         return 1;
     }
     fi;
@@ -820,11 +823,15 @@ function openssl_put_data_to_s3() {
     if [ "${response_code}" == "200" ]; 
     then {
         logger --id --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[${STR_NAME}]: openssl_put_data_to_s3, Response code: ${response_code}. Request executed successfully.";
+        logger --id --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[${STR_NAME}]: openssl_put_data_to_s3, performing cleanup, removing ${6}.tmp.";
+        rm -f "${6}.tmp";
         logger --id --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[${STR_NAME}]: openssl_put_data_to_s3, func exited with code 0.";
         return 0;
     }
     else {
         logger --id --rfc5424 --stderr --tag 'warning' --priority 'local7.warning' -- "[${STR_NAME}]: openssl_put_data_to_s3, Response code: ${response_code}. Something went wrong.";
+        cat "${6}.tmp";
+        rm -f "${6}.tmp";
         return 1;
     }
     fi;
@@ -885,10 +892,11 @@ function netcat_get_data_from_s3() {
     then {
         logger --id --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[${STR_NAME}]: netcat_get_data_from_s3, Response code: ${response_code}. Request executed successfully.";
         logger --id --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[${STR_NAME}]: netcat_get_data_from_s3, Processing recieved object...";
-        logger --id --rfc5424 --stderr --tag 'info' --priority 'local7.info' -- "[${STR_NAME}]: netcat_get_data_from_s3, Might work incorrectly with binary types!";
+        logger --id --rfc5424 --stderr --tag 'info' --priority 'local7.info' -- "[${STR_NAME}]: netcat_get_data_from_s3, might work incorrectly with binary types!";
         tr -d '\r' < "${6}.tmp" | sed '1,/^$/d' > "${6}";
+        logger --id --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[${STR_NAME}]: netcat_get_data_from_s3, object processed.";
+        logger --id --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[${STR_NAME}]: netcat_get_data_from_s3, performing cleanup, removing ${6}.";
         rm "${6}.tmp";
-        logger --id --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[${STR_NAME}]: netcat_get_data_from_s3, Object processed.";
         logger --id --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[${STR_NAME}]: netcat_get_data_from_s3, Function exited with code 0.";
         return 0;
     }
@@ -1039,8 +1047,9 @@ function netcat_put_data_to_s3() {
     if [ "${response_code}" == "200" ]; 
     then {
         logger --id --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[${STR_NAME}]: netcat_put_data_to_s3, Response code: ${response_code}. Request executed successfully.";
-        logger --id --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[${STR_NAME}]: netcat_put_data_to_s3, func exited with code 0.";
+        logger --id --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[${STR_NAME}]: netcat_put_data_to_s3, performing cleanup, removing ${6}.tmp.";
         rm -f "${6}.tmp";
+        logger --id --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[${STR_NAME}]: netcat_put_data_to_s3, func exited with code 0.";
         return 0;
     }
     else {
