@@ -792,8 +792,8 @@ function openssl_put_data_to_s3() {
     fi;
 
     dt_val="$(date -R)";
-    str_to_sign="PUT\n\napplication/octet-stream\n${dt_val}\n/${4}";
-    signature="$(echo -en "${str_to_sign}" | openssl sha1 -hmac "${3}" -binary | base64 -)";
+    str_to_sign="PUT\n\napplication/octet-stream\n${dt_val}\n/${5}";
+    signature="$(echo -en "${str_to_sign}" | openssl sha1 -hmac "${4}" -binary | base64 -)";
 
     query_line="PUT /${5} HTTP/1.1";
     header_host="Host: ${1}";
@@ -839,7 +839,8 @@ function netcat_get_data_from_s3() {
     #    (3) - Access key ID
     #    (4) - Secret key
     #    (5) - Object name (with bucket)
-    #    (6) - Local file name     ############################################################
+    #    (6) - Local file name     
+    ############################################################
 
     logger --id --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[${STR_NAME}]: netcat_get_data_from_s3, func called with args(${#}): [${*}].";
     logger --id --rfc5424 --tag 'warning' --stderr --priority 'local7.warning' -- "[${STR_NAME}]: netcat_get_data_from_s3, this method can only implement bare HTTP, no security supported.";
@@ -985,7 +986,7 @@ function netcat_put_data_to_s3() {
     declare response_code='';
     declare query_line='';
     declare header_host='';
-    declare header_content_len=0;
+    declare header_content_len='0';
     declare header_content_type='Content-Type: application/octet-stream';
     declare header_date='';
     declare header_authorization='';
@@ -1012,8 +1013,8 @@ function netcat_put_data_to_s3() {
     fi;
 
     dt_val="$(date -R)";
-    str_to_sign="PUT\n\napplication/octet-stream\n${dt_val}\n/${4}";
-    signature="$(echo -en "${str_to_sign}" | openssl sha1 -hmac "${3}" -binary | base64 -)";
+    str_to_sign="PUT\n\napplication/octet-stream\n${dt_val}\n/${5}";
+    signature="$(echo -en "${str_to_sign}" | openssl sha1 -hmac "${4}" -binary | base64 -)";
 
     query_line="PUT /${5} HTTP/1.1";
     header_host="Host: ${1}";
@@ -1031,7 +1032,7 @@ function netcat_put_data_to_s3() {
      printf "${header_authorization}\r\n";
      printf "\r\n";
      cat "${6}";) |\
-    netcat -v -v "${1}" "${2}"  > "${6}.tmp";
+    netcat -v -v "${1}" "${2}" > "${6}.tmp";
 
     response_code=$(head --silent --lines=1 "${6}.tmp" | awk -F' ' '/HTTP\/[0-9.]+/{print $2}';);
 
@@ -1039,10 +1040,13 @@ function netcat_put_data_to_s3() {
     then {
         logger --id --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[${STR_NAME}]: netcat_put_data_to_s3, Response code: ${response_code}. Request executed successfully.";
         logger --id --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[${STR_NAME}]: netcat_put_data_to_s3, func exited with code 0.";
+        rm -f "${6}.tmp";
         return 0;
     }
     else {
         logger --id --rfc5424 --stderr --tag 'warning' --priority 'local7.warning' -- "[${STR_NAME}]: netcat_put_data_to_s3, Response code: ${response_code}. Something went wrong.";
+        cat "${6}.tmp";
+        rm -f "${6}.tmp";
         return 1;
     }
     fi;
