@@ -942,7 +942,7 @@ function netcat_head_data_from_s3() {
                       printf "${header_user_agent}\r\n";
                       printf "${header_authorization}\r\n";
                       printf "\r\n";) |\
-                     netcat -v -v "${1}" "${2}" | head --silent --lines=1 - |\
+                     netcat -v -v "${1}" "${2}" |\
                      head --silent --lines=1 - |\
                      awk -F' ' '/HTTP\/[0-9.]+/{print $2}';)";
 
@@ -1003,7 +1003,41 @@ function netcat_put_data_to_s3() {
     }
     fi;
 
-    return 1;
+    dt_val="$(date -R)";
+    str_to_sign="PUT\n\napplication/octet-stream\n${dt_val}\n/${4}";
+    signature="$(echo -en "${str_to_sign}" | openssl sha1 -hmac "${3}" -binary | base64 -)";
+
+    query_line="PUT /${5} HTTP/1.1";
+    header_host="Host: ${1}";
+    header_date="Date: ${dt_val}";
+    header_authorization="Authorization: AWS ${3}:${signature}";
+    header_content_len="Content-Length: $(wc --bytes < "${6}")";
+
+    (printf "${query_line}\r\n";
+     printf "${header_accept}\r\n";
+     printf "${header_content_type}\r\n";
+     printf "${header_content_len}\r\n";
+     printf "${header_date}\r\n";
+     printf "${header_host}\r\n";
+     printf "${header_user_agent}\r\n";
+     printf "${header_authorization}\r\n";
+     printf "\r\n";
+     cat "${6}";) |\
+    netcat -v -v "${1}" "${2}"  > "${6}.tmp";
+
+    response_code=$(head --silent --lines=1 "${6}.tmp" | awk -F' ' '/HTTP\/[0-9.]+/{print $2}';);
+
+    if [ "${response_code}" == "200" ]; 
+    then {
+        logger --id --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[${STR_NAME}]: netcat_put_data_to_s3, Response code: ${response_code}. Request executed successfully.";
+        logger --id --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[${STR_NAME}]: netcat_put_data_to_s3, func exited with code 0.";
+        return 0;
+    }
+    else {
+        logger --id --rfc5424 --stderr --tag 'warning' --priority 'local7.warning' -- "[${STR_NAME}]: netcat_put_data_to_s3, Response code: ${response_code}. Something went wrong.";
+        return 1;
+    }
+    fi;
 }
 
 function perform_access_checks() {
