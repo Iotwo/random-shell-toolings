@@ -884,7 +884,7 @@ function netcat_get_data_from_s3() {
      printf "${header_user_agent}\r\n";
      printf "${header_authorization}\r\n";
      printf "\r\n";) |\
-    netcat -v -v "${1}" "${2}" > "${6}.tmp";
+    netcat "${1}" "${2}" > "${6}.tmp";
 
     response_code=$(head --silent --lines=1 "${6}.tmp" | awk -F' ' '/HTTP\/[0-9.]+/{print $2}';);
     
@@ -951,7 +951,7 @@ function netcat_head_data_from_s3() {
                       printf "${header_user_agent}\r\n";
                       printf "${header_authorization}\r\n";
                       printf "\r\n";) |\
-                     netcat -v -v "${1}" "${2}" |\
+                     netcat "${1}" "${2}" |\
                      head --silent --lines=1 - |\
                      awk -F' ' '/HTTP\/[0-9.]+/{print $2}';)";
 
@@ -1040,7 +1040,7 @@ function netcat_put_data_to_s3() {
      printf "${header_authorization}\r\n";
      printf "\r\n";
      cat "${6}";) |\
-    netcat -v -v "${1}" "${2}" > "${6}.tmp";
+    netcat "${1}" "${2}" > "${6}.tmp";
 
     response_code=$(head --silent --lines=1 "${6}.tmp" | awk -F' ' '/HTTP\/[0-9.]+/{print $2}';);
 
