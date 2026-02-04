@@ -5,11 +5,11 @@
 
 ## Указатель
 <ul>
-  <li> <a id="s3-interaction-suite">s3_interaction_suite.sh</a> </li>
+  <li> [s3-interaction-suite.sh](#s3-interaction-suite) </li>
 </ul>
 
 
-<h2 id="s3-interaction-suite">S3 interaction suite</h2>
+## S3 interaction suite
 
 <p> Утилита для взаимодействия с AWS-S3-совместимым хранилищем (AWS S3, Yandex Cloud, Ceph, etc...). Для выполнения взаимодействия используется протокол HTTP. В ходе работы утилиты выполняется 1 запрос к S3 с указанными параметрами.</p>
 
