@@ -4,9 +4,7 @@
 
 
 ## Указатель
-<ul>
-  <li> [s3-interaction-suite.sh](#s3-interaction-suite) </li>
-</ul>
+<p> [s3_interaction_suite.sh](#s3-interaction-suite) </p>
 
 
 ## S3 interaction suite
