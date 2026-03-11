@@ -21,10 +21,6 @@ declare key_s='';
 declare obj='';
 declare local_path='';
 
-declare dt_val='';  # used as global var in
-declare str_to_sign='';  # used as global var 
-declare signature='';  # used as global var 
-
 declare -i method_result=-1;
 
 # functions declaration
@@ -1233,7 +1229,10 @@ function perform_request_to_s3() {
 
     logger --id --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[${STR_NAME}]: perform_request_to_s3, func called with args(${#}): [${*}].";
 
-    # dt_val, signature, str_to_sign - variables from global scope
+    declare dt_val='';  # used as global var in
+    declare str_to_sign='';  # used as global var 
+    declare signature='';  # used as global var 
+
     declare response_code="";
 
     dt_val="$(date -R)";
