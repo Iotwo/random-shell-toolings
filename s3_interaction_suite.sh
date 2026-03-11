@@ -35,7 +35,7 @@ function perform_basic_utility_checks() {
     #        supporting the program is available
     ############################################################
 
-    declare -a tools=( 'awk' 'basename' 'cut' 'getopts' 'head' 'logger' 'tail' 'test' '[[' );
+    declare -a tools=( 'awk' 'base64' 'basename' 'date' 'cut' 'getopts' 'head' 'logger' 'openssl' 'tail' 'test' 'wc' '[[' );
     declare exists='';
     declare -i w_exc=-1;
 
@@ -1080,10 +1080,6 @@ function perform_tooling_utility_checks() {
 
     declare FLOAT_OLD_CURL_MAX_VER='8.2.1';
 
-    declare -a old_curl_tools=( 'base64' 'date' 'openssl' );
-    declare -a wget_tools=( 'base64' 'date' 'openssl' 'wc' );
-    declare -a openssl_tools=( 'base64' 'date' 'wc' );
-    declare -a netcat_tools=( 'base64' 'date' 'openssl' 'wc' );
     declare current_curl_ver='';
     declare exists='';
     declare -i w_exc=-1;
@@ -1113,20 +1109,6 @@ function perform_tooling_utility_checks() {
             else
                  logger --id --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[${STR_NAME}]: perform_tooling_utility_checks, cURL v8.2- persists in the system. Checking the rest utilities.";
             fi;
-    
-            for utility in "${old_curl_tools[@]}"
-            do {
-                logger --id --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[${STR_NAME}]: perform_tooling_utility_checks, checking utility \"${utility}\" exists.";
-                exists="$(command -v "${utility}")";
-                w_exc=$?;
-                if [ "${exists}" = "" ] || [ ${w_exc} -ne 0 ]; then
-                    {
-                    logger --id --rfc5424 --stderr --tag 'error' --priority 'local7.error' -- "[${STR_NAME}]: perform_tooling_utility_checks, utility \"${utility}\" is missing. Aborting.";
-                    exit 1;
-                }
-                fi;
-            }
-            done;
 
             ;;
         'CURL') 
@@ -1153,20 +1135,6 @@ function perform_tooling_utility_checks() {
             }
             fi;
 
-            for utility in "${old_curl_tools[@]}"
-            do {
-                logger --id --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[${STR_NAME}]: perform_tooling_utility_checks, checking utility \"${utility}\" exists.";
-                exists="$(command -v "${utility}")";
-                w_exc=$?;
-                if [ "${exists}" = "" ] || [ ${w_exc} -ne 0 ]; then
-                    {
-                    logger --id --rfc5424 --stderr --tag 'error' --priority 'local7.error' -- "[${STR_NAME}]: perform_tooling_utility_checks, utility \"${utility}\" is missing. Aborting.";
-                    exit 1;
-                }
-                fi;
-            }
-            done;
-
             ;;
         'WGET')
             logger --id --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[${STR_NAME}]: perform_tooling_utility_checks, argument value is WGET, GNU/wget choosen as backend.";
@@ -1180,20 +1148,6 @@ function perform_tooling_utility_checks() {
                 exit 1;
             }
             fi;
-
-            for utility in "${wget_tools[@]}"
-            do {
-                logger --id --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[${STR_NAME}]: perform_tooling_utility_checks, checking utility \"${utility}\" exists.";
-                exists="$(command -v "${utility}")";
-                w_exc=$?;
-                if [ "${exists}" = "" ] || [ ${w_exc} -ne 0 ]; then
-                    {
-                    logger --id --rfc5424 --stderr --tag 'error' --priority 'local7.error' -- "[${STR_NAME}]: perform_tooling_utility_checks, utility \"${utility}\" is missing. Aborting.";
-                    exit 1;
-                }
-                fi;
-            }
-            done;
 
             ;;
         'OPENSSL')
@@ -1209,19 +1163,6 @@ function perform_tooling_utility_checks() {
             }
             fi;
 
-            for utility in "${openssl_tools[@]}"
-            do {
-                logger --id --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[${STR_NAME}]: perform_tooling_utility_checks, checking utility \"${utility}\" exists.";
-                exists="$(command -v "${utility}")";
-                w_exc=$?;
-                if [ "${exists}" = "" ] || [ ${w_exc} -ne 0 ]; then
-                    {
-                    logger --id --rfc5424 --stderr --tag 'error' --priority 'local7.error' -- "[${STR_NAME}]: perform_tooling_utility_checks, utility \"${utility}\" is missing. Aborting.";
-                    exit 1;
-                }
-                fi;
-            }
-            done;
 
             ;;
         'NETCAT')
@@ -1236,20 +1177,6 @@ function perform_tooling_utility_checks() {
                 exit 1;
             }
             fi;
-
-            for utility in "${netcat_tools[@]}"
-            do {
-                logger --id --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[${STR_NAME}]: perform_tooling_utility_checks, checking utility \"${utility}\" exists.";
-                exists="$(command -v "${utility}")";
-                w_exc=$?;
-                if [ "${exists}" = "" ] || [ ${w_exc} -ne 0 ]; then
-                    {
-                    logger --id --rfc5424 --stderr --tag 'error' --priority 'local7.error' -- "[${STR_NAME}]: perform_tooling_utility_checks, utility \"${utility}\" is missing. Aborting.";
-                    exit 1;
-                }
-                fi;
-            }
-            done;
 
             ;;
         *)
