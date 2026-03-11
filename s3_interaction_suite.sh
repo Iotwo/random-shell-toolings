@@ -101,110 +101,57 @@ function perform_tooling_utility_checks() {
 
     declare current_curl_ver='';
     declare exists='';
-    declare -i w_exc=-1;
 
-    case "$1" in
-        'OLDCURL')
-            logger --id --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[${STR_NAME}]: perform_tooling_utility_checks, argument value is OLDCURL, cURL v8.2- choosen as backend.";
-            logger --id --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[${STR_NAME}]: perform_tooling_utility_checks, checking cURL v8.2- exists...";
+    logger --id --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[${STR_NAME}]: perform_tooling_utility_checks, checking backend ${1} exists...";
+    case "${1}" in
+        'OLDCURL' | 'CURL')
             exists="$(command -v 'curl';)";
-            w_exc=$?;
-            logger --id --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[${STR_NAME}]: perform_tooling_utility_checks, bash.which returned:\"${exists}\" and exited with code - ${w_exc};";
-            if [ -z "${exists}" ] || [ ${w_exc} -ne 0 ]; 
-            then {
-                logger --id --rfc5424 --stderr --tag 'error' --priority 'local7.error' -- "[${STR_NAME}]: perform_tooling_utility_checks, cURL v8.2- does not persist in the system. Aborting with error.";
-                exit 1;
-            }
-            fi;
-            #check curl version
             current_curl_ver=$(curl --version | awk -F' ' '{print $2;}' | head -n 1;)
             logger --id --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[${STR_NAME}]: perform_tooling_utility_checks, gathered cURL version is ${current_curl_ver}";
-            exists=$(printf '%s\n' "${FLOAT_OLD_CURL_MAX_VER}" "${current_curl_ver}" | sort --version-sort --reverse - | head --lines=1 -);  # highest curl's version stored here
-            if [ "${exists}" == "${FLOAT_OLD_CURL_MAX_VER}" ]; 
-            then {
-                logger --id --rfc5424 --stderr --tag 'error' --priority 'local7.error' -- "[${STR_NAME}]: perform_tooling_utility_checks, gathered cURL version is not supported by this backend option. Aborting.";
-                exit 1;
-            }
-            else
-                 logger --id --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[${STR_NAME}]: perform_tooling_utility_checks, cURL v8.2- persists in the system. Checking the rest utilities.";
-            fi;
-
-            ;;
-        'CURL') 
-            logger --id --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[${STR_NAME}]: perform_tooling_utility_checks, argument value is CURL, cURL v8.3+ choosen as backend.";
-            logger --id --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[${STR_NAME}]: perform_tooling_utility_checks, checking cURL v8.3+ exists...";
-            exists="$(command -v 'curl';)";
-            w_exc=$?;
-            logger --id --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[${STR_NAME}]: perform_tooling_utility_checks, bash.which returned:\"${exists}\" and exited with code - ${w_exc};";
-            if [ -z "${exists}" ] || [ ${w_exc} -ne 0 ]; 
-            then {
-                logger --id --rfc5424 --stderr --tag 'error' --priority 'local7.error' -- "[${STR_NAME}]: perform_tooling_utility_checks, cURL v8.3+ does not persist in the system. Aborting with error.";
-                exit 1;
-            }
-            fi;
-            #check curl version
-            current_curl_ver=$(curl --version | awk -F' ' '{print $2;}' | head -n 1;)
-            logger --id --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[${STR_NAME}]: perform_tooling_utility_checks, gathered cURL version is ${current_curl_ver}";
-            exists=$(printf '%s\n' "${FLOAT_OLD_CURL_MAX_VER}" "${current_curl_ver}" | sort --numeric-sort | head --lines 1);  # newest curl's version stored here
-            if [ "${exists}" != "${FLOAT_OLD_CURL_MAX_VER}" ]; then 
-                logger --id --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[${STR_NAME}]: perform_tooling_utility_checks, cURL v8.3+ persists in the system. Checking the rest utilities.";
-            else {
-                logger --id --rfc5424 --stderr --tag 'error' --priority 'local7.error' -- "[${STR_NAME}]: perform_tooling_utility_checks, gathered cURL version is not supported by this backend option. Aborting.";
-                exit 1;
-            }
-            fi;
-
             ;;
         'WGET')
-            logger --id --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[${STR_NAME}]: perform_tooling_utility_checks, argument value is WGET, GNU/wget choosen as backend.";
-            logger --id --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[${STR_NAME}]: perform_tooling_utility_checks, checking GNU/wget exists...";
             exists="$(command -v 'wget';)";
-            w_exc=$?;
-            logger --id --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[${STR_NAME}]: perform_tooling_utility_checks, bash.which returned:\"${exists}\" and exited with code - ${w_exc};";
-            if [ -z "${exists}" ] || [ ${w_exc} -ne 0 ]; 
-            then {
-                logger --id --rfc5424 --stderr --tag 'error' --priority 'local7.error' -- "[${STR_NAME}]: perform_tooling_utility_checks, GNU/wget does not persist in the system. Aborting with error.";
-                exit 1;
-            }
-            fi;
-
             ;;
         'OPENSSL')
-            logger --id --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[${STR_NAME}]: perform_tooling_utility_checks, argument value is WGET, OpenSSL choosen as backend.";
-            logger --id --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[${STR_NAME}]: perform_tooling_utility_checks, checking OpenSSL exists...";
             exists="$(command -v 'openssl';)";
-            w_exc=$?;
-            logger --id --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[${STR_NAME}]: perform_tooling_utility_checks, bash.which returned:\"${exists}\" and exited with code - ${w_exc};";
-            if [ -z "${exists}" ] || [ ${w_exc} -ne 0 ]; 
-            then {
-                logger --id --rfc5424 --stderr --tag 'error' --priority 'local7.error' -- "[${STR_NAME}]: perform_tooling_utility_checks, OpenSSL does not persist in the system. Aborting with error.";
-                exit 1;
-            }
-            fi;
-
-
             ;;
         'NETCAT')
-            logger --id --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[${STR_NAME}]: perform_tooling_utility_checks, argument value is NETCAT, netcat choosen as backend.";
-            logger --id --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[${STR_NAME}]: perform_tooling_utility_checks, checking netcat exists...";
             exists="$(command -v 'netcat';)";
-            w_exc=$?;
-            logger --id --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[${STR_NAME}]: perform_tooling_utility_checks, bash.which returned:\"${exists}\" and exited with code - ${w_exc};";
-            if [ -z "${exists}" ] || [ ${w_exc} -ne 0 ]; 
-            then {
-                logger --id --rfc5424 --stderr --tag 'error' --priority 'local7.error' -- "[${STR_NAME}]: perform_tooling_utility_checks, netcat does not persist in the system. Aborting with error.";
-                exit 1;
-            }
-            fi;
-
             ;;
         *)
             logger --id --rfc5424 --stderr --tag 'error' --priority 'local7.error' -- "[${STR_NAME}]: perform_tooling_utility_checks, Unsupported backend type. Aborting.";
             exit 1;
-
             ;;
     esac;
-    logger --id --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[${STR_NAME}]: perform_tooling_utility_checks, backend and all needed utilities persist.";
+    if [ -z ${exists} ];
+    then {
+        logger --id --rfc5424 --stderr --tag 'error' --priority 'local7.error' -- "[${STR_NAME}]: perform_tooling_utility_checks, backend ${1} does not persist in the system. Aborting with error.";
+        exit 1;
+    }
+
+    case "${1}" in
+        'CURL')
+            exists=$(printf '%s\n' "${FLOAT_OLD_CURL_MAX_VER}" "${current_curl_ver}" | sort --numeric-sort - | head --lines 1 -);  # highest curl's version stored here
+            ;;
+        'OLDCURL')
+            # note a --reverse key here!
+            exists=$(printf '%s\n' "${FLOAT_OLD_CURL_MAX_VER}" "${current_curl_ver}" | sort --version-sort --reverse - | head --lines=1 -);  # highest curl's version stored here
+            ;;
+        *)
+            logger --id --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[${STR_NAME}]: perform_tooling_utility_checks, choosen backend persist.";
+            return 0;
+            ;;
+    esac;
+
+    if [ "${exists}" == "${FLOAT_OLD_CURL_MAX_VER}" ];
+    then {
+        logger --id --rfc5424 --stderr --tag 'error' --priority 'local7.error' -- "[${STR_NAME}]: perform_tooling_utility_checks, gathered cURL version is not supported by this backend option. Aborting.";
+        exit 1;
+    }
+    fi;
+    ;;
+
+    logger --id --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[${STR_NAME}]: perform_tooling_utility_checks, choosen backend persist.";
 
     return 0;
 }
