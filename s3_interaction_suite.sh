@@ -1190,6 +1190,23 @@ function perform_tooling_utility_checks() {
     return 0;
 }
 
+function perform_request_to_s3() {
+    ############################################################
+    # DESCR: This method performs http request to s3-storage 
+    #        with selected backend and arguments
+    # ARGS: 
+    #   (1) - HTTP method
+    #   (2) - selected backend
+    #   (3) - S3 FQDN
+    #   (4) - S3 destination port
+    #   (5) - Access key ID
+    #   (6) - Secret key
+    #   (7) - Object name (with bucket)
+    #   (8) - Local file name (optional)
+    #   (9) - AWS sigstring   
+    ############################################################
+}
+
 function print_help() {
     logger --id --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[${STR_NAME}]: help, func called.";
     echo "Name: S3 interaction suite";
