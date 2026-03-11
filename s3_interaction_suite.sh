@@ -1,6 +1,6 @@
 #!/usr/bin/bash
 
-####
+#####
 # Name: S3 interaction suite
 # Description: Read meta, download objects from or upload to S3-compatible storage
 # Req: read-write access on current working directory
