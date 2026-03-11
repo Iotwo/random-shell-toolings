@@ -1063,7 +1063,32 @@ function perform_access_checks() {
 	############################################################
 	# DESCR: Checks if target directory or target uploaded file
 	#        is accessible for read/write operations
+    # ARGS:
+    #   (1) - exact file name
 	############################################################
+
+    logger --id --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[${STR_NAME}]: perform_access_checks, func called with args(${#}): [${*}].";
+
+    if [ -z "${1}" ]; 
+    then {
+        logger --id --rfc5424 --stderr --tag 'error' --priority 'local7.error' -- "[${STR_NAME}]: perform_access_checks, file name not set: \'${1}\'.";
+        return 1;
+    }
+    fi;
+    if [ ! -f "${1}" ]; 
+    then {
+        logger --id --rfc5424 --stderr --tag 'error' --priority 'local7.error' -- "[${STR_NAME}]: perform_access_checks, file \'${1}\' does not exist!";
+        return 1; 
+    }
+    fi;
+    if [ ! -w "${1}" ]; 
+    then {
+        logger --id --rfc5424 --stderr --tag 'error' --priority 'local7.error' -- "[${STR_NAME}]: perform_access_checks, file \'${1}\' is not readable!";
+        return 1;
+    }
+    fi;
+
+    logger --id --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[${STR_NAME}]: perform_access_checks, all checks passed."
 
     return 0;
 }
@@ -1203,8 +1228,44 @@ function perform_request_to_s3() {
     #   (6) - Secret key
     #   (7) - Object name (with bucket)
     #   (8) - Local file name (optional)
-    #   (9) - AWS sigstring   
+    #   (9) - AWS sigstring (optional)
     ############################################################
+
+    logger --id --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[${STR_NAME}]: perform_request_to_s3, func called with args(${#}): [${*}].";
+
+    # dt_val, signature, str_to_sign - variables from global scope
+    declare response_code="";
+
+    dt_val="$(date -R)";
+    str_to_sign="GET\n\napplication/octet-stream\n${dt_val}\n/${5}";
+    signature="$(echo -en "${str_to_sign}" | openssl sha1 -hmac "${4}" -binary | base64 -)";
+
+    if [ "${1}" == "PUT" ]; 
+    then {
+        logger --id --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[${STR_NAME}]: perform_request_to_s3, checking file permissions for ${1} request.";
+        perform_access_checks "${8}";
+        response_code=${?};
+        if [ ${response_code} -ne 0 ]; 
+        then {
+            logger --id --rfc5424 --stderr --tag 'error' --priority 'local7.error' -- "[${STR_NAME}]: perform_request_to_s3, ${1} request cannot be performed, not enough permissions.";
+            return 1;
+        }
+        logger --id --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[${STR_NAME}]: perform_request_to_s3, file permissions checks passed.";
+    }
+    fi;
+
+    case "${2}" in
+        'CURL')
+            ;;
+        'NETCAT')
+            ;;
+        'OLDCURL')
+            ;;
+        'OPENSSL')
+            ;;
+        'WGET')
+            ;;
+    esac;
 }
 
 function print_help() {
