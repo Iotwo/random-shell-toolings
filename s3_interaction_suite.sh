@@ -128,6 +128,7 @@ function perform_tooling_utility_checks() {
         logger --id --rfc5424 --stderr --tag 'error' --priority 'local7.error' -- "[${STR_NAME}]: perform_tooling_utility_checks, backend ${1} does not persist in the system. Aborting with error.";
         exit 1;
     }
+    fi;
 
     case "${1}" in
         'CURL')
@@ -155,6 +156,7 @@ function perform_tooling_utility_checks() {
 
     return 0;
 }
+
 
 function oldcurl_get_data_from_s3() {
 
@@ -1185,6 +1187,15 @@ function perform_request_to_s3() {
 
     declare response_code="";
 
+    declare query_line='';
+    declare header_host='';
+    declare header_content_len='0';
+    declare header_content_type='Content-Type: application/octet-stream';
+    declare header_date='';
+    declare header_authorization='';
+    declare header_accept='Accept: */*';
+    declare header_user_agent='';
+
     dt_val="$(date -R)";
     str_to_sign="${1}\n\napplication/octet-stream\n${dt_val}\n/${7}";
     signature="$(echo -en "${str_to_sign}" | openssl sha1 -hmac "${6}" -binary | base64 -)";
@@ -1199,9 +1210,24 @@ function perform_request_to_s3() {
             logger --id --rfc5424 --stderr --tag 'error' --priority 'local7.error' -- "[${STR_NAME}]: perform_request_to_s3, ${1} request cannot be performed, not enough permissions.";
             return 1;
         }
+        fi;
         logger --id --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[${STR_NAME}]: perform_request_to_s3, file permissions checks passed.";
     }
     fi;
+
+    query_line="${1} /${7} HTTP/1.1";
+    header_authorization="Authorization: AWS ${5}:${signature}";
+    header_date="Date: ${dt_val}";
+    header_host="Host: ${3}";
+
+    case "${1}" in 
+        'GET')
+            ;;
+        'HEAD')
+            ;;
+        'PUT')
+            ;;
+    esac;
 
     case "${2}" in
         'CURL')
