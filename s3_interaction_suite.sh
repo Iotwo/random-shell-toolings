@@ -1161,6 +1161,23 @@ function netcat_put_data_to_s3() {
 }
 
 
+function execute_get_request_to_s3() {
+    ############################################################
+    # DESCR: 
+    # ARGS: 
+}
+
+function execute_head_request_to_s3() {
+    ############################################################
+    # DESCR: 
+    # ARGS: 
+}
+
+function execute_put_request_to_s3() {
+    ############################################################
+    # DESCR: 
+    # ARGS: 
+}
 
 
 function perform_request_to_s3() {
@@ -1185,7 +1202,8 @@ function perform_request_to_s3() {
     declare str_to_sign='';  # used as global var 
     declare signature='';  # used as global var 
 
-    declare response_code="";
+    declare response='';
+    declare response_code='';
 
     declare query_line='';
     declare header_host='';
