@@ -1165,18 +1165,42 @@ function execute_get_request_to_s3() {
     ############################################################
     # DESCR: 
     # ARGS: 
+    #   (1) - selected backend
+    #   (2) - S3 FQDN
+    #   (3) - S3 destination port
+    #   (4) - Access key ID
+    #   (5) - signature argument
+    #   (6) - 
+    #   (7) - 
+    #   (8) - 
 }
 
 function execute_head_request_to_s3() {
     ############################################################
     # DESCR: 
     # ARGS: 
+    #   (1) - selected backend
+    #   (2) - S3 FQDN
+    #   (3) - S3 destination port
+    #   (4) - Access key ID
+    #   (5) - 
+    #   (6) - 
+    #   (7) - 
+    #   (8) - 
 }
 
 function execute_put_request_to_s3() {
     ############################################################
     # DESCR: 
     # ARGS: 
+    #   (1) - selected backend
+    #   (2) - S3 FQDN
+    #   (3) - S3 destination port
+    #   (4) - Access key ID
+    #   (5) - 
+    #   (6) - 
+    #   (7) - 
+    #   (8) - 
 }
 
 
