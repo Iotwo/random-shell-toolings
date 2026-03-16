@@ -81,6 +81,12 @@ function perform_access_checks() {
         return 1;
     }
     fi;
+    if [ ! -w "${1}" ]; 
+    then {
+        logger --id --rfc5424 --stderr --tag 'error' --priority 'local7.error' -- "[${STR_NAME}]: perform_access_checks, file \'${1}\' is not writable!";
+        return 1;
+    }
+    fi;
 
     logger --id --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[${STR_NAME}]: perform_access_checks, all checks passed."
 
