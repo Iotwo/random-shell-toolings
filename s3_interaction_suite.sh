@@ -187,6 +187,7 @@ function perform_request_to_s3() {
 
     declare response='';
     declare response_code='';
+    declare -i exit_code=0;
 
     declare query_line='';
     declare header_host='';
@@ -224,13 +225,15 @@ function perform_request_to_s3() {
     then { header_content_len="Contetn-Length: $(wc --bytes < "${8}")"; };
     fi;
 
+    logger --id --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[${STR_NAME}]: perform_request_to_s3, ${2} selected as backend.";
     case "${2}" in
-        'CURL')
+        'CURL') 
+            logger --id --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[${STR_NAME}]: perform_request_to_s3, performing \'${1}\' request.";
             case "${1}" in 
                 'GET')
                     if [ -z "${7}" ]; 
                     then {
-                        logger --id --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[${STR_NAME}]: Argument \'local path\' is not set. Downloaded data will be saved with s3-object name.";
+                        logger --id --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[${STR_NAME}]: perform_request_to_s3, Argument \'local path\' is not set. Downloaded data will be saved with s3-object name.";
                         response="$(curl --location --silent --request 'GET' \
                                            --header "${header_content_type}" \
                                            --aws-sigv4 "${9}" \
@@ -240,7 +243,7 @@ function perform_request_to_s3() {
                                            --remote-name;)";
                     }
                     else {
-                        logger --id --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[${STR_NAME}]: Argument \'local path\' is set. Downloaded data will be saved as ${8}.";
+                        logger --id --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[${STR_NAME}]: perform_request_to_s3, Argument \'local path\' is set. Downloaded data will be saved as ${8}.";
                         response="$(curl --location --silent --request 'GET' \
                                            --header "${header_content_type}" \
                                            --aws-sigv4 "${9}" \
@@ -269,8 +272,13 @@ function perform_request_to_s3() {
                          --upload-file "${7}";)";
                     ;;
             esac;
+
+            logger --id --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[${STR_NAME}]: perform_request_to_s3, request performed. Parsing result.";
+            response_code=${response};
+            logger --id --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[${STR_NAME}]: perform_request_to_s3, Result parsed.";
             ;;
         'NETCAT')
+            logger --id --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[${STR_NAME}]: perform_request_to_s3, performing \'${1}\' request.";
             (printf "${query_line}\r\n";
              printf "${header_accept}\r\n";
              printf "${header_content_len}\r\n";
@@ -279,11 +287,18 @@ function perform_request_to_s3() {
              printf "${header_host}\r\n";
              printf "${header_user_agent}\r\n";
              printf "${header_authorization}\r\n";
-             printf "\r\n";) |\
+             printf "\r\n";
+             if [ "${1}" == 'PUT' ];
+             then { cat "${8}"; }
+             fi; ) |\
             netcat "${3}" "${4}" > "${8}.tmp";
+            
+            logger --id --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[${STR_NAME}]: perform_request_to_s3, request performed. Parsing result.";
             response_code=$(head --silent --lines=1 "${8}.tmp" | awk -F' ' '/HTTP\/[0-9.]+/{print $2}';);
+            logger --id --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[${STR_NAME}]: perform_request_to_s3, Result parsed.";
             ;;
         'OLDCURL')
+            logger --id --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[${STR_NAME}]: perform_request_to_s3, perform_request_to_s3, performing \'${1}\' request.";
             case "${1}" in 
                 'GET')
                     if [ -z "${8}" ]; 
@@ -332,8 +347,13 @@ function perform_request_to_s3() {
                                     --upload-file "${8}";)";
                     ;;
             esac;
+
+            logger --id --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[${STR_NAME}]: perform_request_to_s3, request performed. Parsing result.";
+            response_code=${response};
+            logger --id --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[${STR_NAME}]: perform_request_to_s3, Result parsed.";
             ;;
         'OPENSSL')
+            logger --id --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[${STR_NAME}]: perform_request_to_s3, performing \'${1}\' request.";
             (printf "${query_line}\r\n";
              printf "${header_accept}\r\n";
              printf "${header_content_len}\r\n";
@@ -342,31 +362,39 @@ function perform_request_to_s3() {
              printf "${header_host}\r\n";
              printf "${header_user_agent}\r\n";
              printf "${header_authorization}\r\n";
-             printf "\r\n";) |\
+             printf "\r\n"
+             if [ "${1}" == 'PUT' ];
+             then { cat "${8}"; }
+             fi; ) |\
             openssl s_client -quiet -ign_eof -connect "${3}:${4}" > "${8}.tmp";
+
+            logger --id --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[${STR_NAME}]: perform_request_to_s3, request performed. Parsing result.";
             response_code=$(head --silent --lines=1 "${8}.tmp" | awk -F' ' '/HTTP\/[0-9.]+/{print $2}';);
-            
+            logger --id --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[${STR_NAME}]: perform_request_to_s3, Result parsed.";
             ;;
         'WGET')
+            logger --id --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[${STR_NAME}]: perform_request_to_s3, performing \'${1}\' request.";
             case "${1}" in 
                 'GET')
                     if [ -z "${8}" ];
                     then {
+                        logger --id --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[${STR_NAME}]: perform_request_to_s3, ";
                         response="$(wget --quiet --no-check-certificate --no-http-keep-alive --server-response --method='GET' \
                                         --header="${header_authorization}" \
                                         --header="${header_content_type}" \
                                         --header="${header_date}" \
                                         --header="${header_host}" \
-                                        "https://${3}:${4}/${7}")";
+                                        "https://${3}:${4}/${7}" 2>&1;)";
                     }
                     else {
+                        logger --id --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[${STR_NAME}]: perform_request_to_s3, ";
                         response="$(wget --quiet --no-check-certificate --no-http-keep-alive --server-response --method='GET' \
                                         --header="${header_authorization}" \
                                         --header="${header_content_type}" \
                                         --header="${header_date}" \
                                         --header="${header_host}" \
                                         --output-document="${8}" \
-                                        "https://${3}:${4}/${7}")";
+                                        "https://${3}:${4}/${7}" 2>&1)";
                     }
                     fi;
                     ;;
@@ -377,7 +405,7 @@ function perform_request_to_s3() {
                                     --header="${header_date}" \
                                     --header="${header_host}" \
                                     --spider  \
-                                    "https://${3}:${4}/${7}")";
+                                    "https://${3}:${4}/${7}" 2>&1)";
                     ;;
                 'PUT')
                     response="$(wget --quiet --no-check-certificate --no-http-keep-alive --server-response --method='PUT' \
@@ -387,22 +415,68 @@ function perform_request_to_s3() {
                                     --header="${header_host}" \
                                     --header= "${header_content_len}"\
                                     --body-file="${8}" \
-                                    "https://${3}:${4}/${7}";)";
+                                    "https://${3}:${4}/${7}" 2>&1;)";
                     ;;
             esac;
-            # awk -F' ' '/HTTP\/[0-9.]+/{print $2}';
+
+            logger --id --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[${STR_NAME}]: perform_request_to_s3, request performed. Parsing result.";
+            response_code=$(echo -en "${response}" | awk -F' ' '/HTTP\/[0-9.]+/{print $2}');
+            logger --id --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[${STR_NAME}]: perform_request_to_s3, Result parsed.";
             ;;
     esac;
 
-    if [ "${1}" == "GET" ] && [ "${2}" == "NETCAT" ] || [ "${2}" == "OPENSSL" ];
+    logger --id --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[${STR_NAME}]: perform_request_to_s3, Processing response...";
+    if [ "${response_code}" == "200" ];
     then {
-        logger --id --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[${STR_NAME}]:  Processing recieved object...";
-        logger --id --rfc5424 --stderr --tag 'info' --priority 'local7.info' -- "[${STR_NAME}]: Might work incorrectly with binary types!";
-        tr -d '\r' < "${8}.tmp" | sed '1,/^$/d' > "${8}";
+        logger --id --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[$STR_NAME]: perform_request_to_s3, Request executed successfully.";
+        
+        case "${1}" in
+            'GET')
+                logger --id --rfc5424 --stderr --tag 'info' --priority 'local7.info' -- "[$STR_NAME]: perform_request_to_s3, Response code: ${response_code}. Object ${7} downloaded.";
+                if [ "${2}" == "NETCAT" ] || [ "${2}" == "OPENSSL" ];
+                then {
+                    logger --id --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[${STR_NAME}]: perform_request_to_s3, Processing recieved object...";
+                    logger --id --rfc5424 --stderr --tag 'info' --priority 'local7.info' -- "[${STR_NAME}]: perform_request_to_s3, Might work incorrectly with binary types!";
+                    tr -d '\r' < "${8}.tmp" | sed '1,/^$/d' > "${8}";
+                }
+                fi;
+                ;;
+            'HEAD')
+                logger --id --rfc5424 --stderr --tag 'info' --priority 'local7.info' -- "[$STR_NAME]: perform_request_to_s3, Response code: ${response_code}. Object ${7} exists."
+            ;;
+            'PUT')
+                logger --id --rfc5424 --stderr --tag 'info' --priority 'local7.info' -- "[$STR_NAME]: perform_request_to_s3, Response code: ${response_code}. Object ${8} uploaded as ${7}";
+            ;;
+        esac;
+
+        logger --id --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[$STR_NAME]: perform_request_to_s3, Function exited with code 0.";
+        exit_code=0;
+    }
+    elif [ "${response_code}" == "404" ];
+    then {
+        logger --id --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[$STR_NAME]: perform_request_to_s3, Request executed successfully.";
+        logger --id --rfc5424 --stderr --tag 'info' --priority 'local7.info' -- "[$STR_NAME]: perform_request_to_s3, Response code: ${response_code}. Requested object is missing on the resource.";
+        exit_code=0;
+    }
+    else {
+        logger --id --rfc5424 --stderr --tag 'warning' --priority 'local7.warning' -- "[$STR_NAME]: perform_request_to_s3, Something went wrong.";
+        if [ "${2}" == "NETCAT" ] || [ "${2}" == "OPENSSL" ];
+        then {
+            cat "${6}.tmp";
+        }
+        fi;
+        exit_code=1;
     }
     fi;
-    logger --id --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[${STR_NAME}]: Performing cleanup, removing ${8}.tmp.";
-    rm -f "${8}.tmp";
+
+    if [ "${2}" == "NETCAT" ] || [ "${2}" == "OPENSSL" ];
+    then {
+        logger --id --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[${STR_NAME}]: perform_request_to_s3, Performing cleanup, removing ${8}.tmp.";
+        rm -f "${8}.tmp";
+    }
+    fi;
+
+    return ${exit_code};
 }
 
 
