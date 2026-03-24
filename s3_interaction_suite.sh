@@ -236,13 +236,11 @@ function perform_request_to_s3() {
     str_to_sign="${1}\n\napplication/octet-stream\n${dt_val}\n/${7}";
     signature="$(echo -en "${str_to_sign}" | openssl sha1 -hmac "${6}" -binary | base64 -)";
 
-    if [ "${1}" == "PUT" ]; 
-    then {
+    if [ "${1}" == "PUT" ]; then {
         logger --id --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[${STR_NAME}]: perform_request_to_s3, checking file permissions for ${1} request.";
         perform_access_checks "${8}";
         response_code=${?};
-        if [ ${response_code} -ne 0 ]; 
-        then {
+        if [ ${response_code} -ne 0 ];  then {
             logger --id --rfc5424 --stderr --tag 'error' --priority 'local7.error' -- "[${STR_NAME}]: perform_request_to_s3, ${1} request cannot be performed, not enough permissions.";
             return 1;
         }
@@ -476,20 +474,19 @@ function perform_request_to_s3() {
             ;;
         esac;
 
-        logger --id --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[$STR_NAME]: perform_request_to_s3, Function exited with code 0.";
         exit_code=0;
     }
     elif [ "${response_code}" == "404" ]; then {
         logger --id --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[$STR_NAME]: perform_request_to_s3, Request executed successfully.";
         logger --id --rfc5424 --stderr --tag 'info' --priority 'local7.info' -- "[$STR_NAME]: perform_request_to_s3, Response code: ${response_code}. Requested object is missing on the resource.";
+
         exit_code=0;
     }
     else {
         logger --id --rfc5424 --stderr --tag 'warning' --priority 'local7.warning' -- "[$STR_NAME]: perform_request_to_s3, Something went wrong.";
-        if [ "${2}" == "NETCAT" ] || [ "${2}" == "OPENSSL" ]; then {
-            cat "${6}.tmp";
-        }
+        if [ "${2}" == "NETCAT" ] || [ "${2}" == "OPENSSL" ]; then { cat "${6}.tmp"; }
         fi;
+
         exit_code=1;
     }
     fi;
@@ -500,6 +497,8 @@ function perform_request_to_s3() {
     }
     fi;
 
+
+    logger --id --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[$STR_NAME]: perform_request_to_s3, Function exited with code ${exit_code}.";
     return ${exit_code};
 }
 
@@ -608,7 +607,7 @@ if [ ${method_result} -ne 0 ]; then {
     exit 1;
 }
 
-logger --id --rfc5424 --tag 'debug' --priority 'user.debug' -- "[${STR_NAME}]: Arguments: (backend:${backend}; request:${req}; fqdn:${fqdn}; access-key:${key_id}; secret-key:${key_s}; object-name:${obj}; local-path:${local_path}).";
+logger --id --rfc5424 --tag 'debug' --priority 'user.debug' -- "[${STR_NAME}]: Arguments: (backend:${backend}; request:${req}; fqdn:${fqdn}; port:${port}; access-key:${key_id}; secret-key:${key_s}; object-name:${obj}; local-path:${local_path}; aws-sigv4-string:${sigstring}).";
 
 perform_tooling_utility_checks "${backend}";
 
