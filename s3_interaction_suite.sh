@@ -93,6 +93,40 @@ function perform_access_checks() {
     return 0;
 }
 
+function perform_args_checks() {
+    ############################################################
+    # DESCR: Checks if target directory or target uploaded file
+    #        is accessible for read/write operations
+    # ARGS:
+    #   (1) - request type
+    #   (2) - backend
+    ############################################################
+
+    logger --id --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[${STR_NAME}]: perform_args_checks, checking request type.";
+    case "${1}" in
+        'GET' | 'HEAD' | 'PUT')
+            logger --id --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[${STR_NAME}]: perform_args_checks, request type is correct.";
+            ;;
+        *)
+            logger --id --rfc5424 --tag 'error' --priority 'local7.error' -- "[${STR_NAME}]: perform_args_checks, unsupported request type.";
+            return 1;
+            ;;
+    esac;
+
+    logger --id --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[${STR_NAME}]: perform_args_checks, checking backend value.";
+    case "${1}" in
+        'GET' | 'HEAD' | 'PUT')
+            logger --id --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[${STR_NAME}]: perform_args_checks, backend value is correct.";
+            ;;
+        *)
+            logger --id --rfc5424 --tag 'error' --priority 'local7.error' -- "[${STR_NAME}]: perform_args_checks, unsupported backend.";
+            return 1;
+            ;;
+    esac;
+
+    return 0;
+}
+
 function perform_tooling_utility_checks() {
     ############################################################
     # DESCR: Check that all needed tooling is available and all
@@ -469,7 +503,6 @@ function perform_request_to_s3() {
     return ${exit_code};
 }
 
-
 function print_help() {
     logger --id --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[${STR_NAME}]: help, func called.";
     echo "Name: S3 interaction suite";
@@ -568,90 +601,19 @@ while getopts "${STR_SHORT_O}" name; do {
     esac;
 }
 done;
+perform_args_checks "${req}" "${backend}";
+method_result=${?};
+if [ ${method_result} -ne 0 ]; then {
+    logger --id --rfc5424 --stderr --tag 'error' --priority 'user.error' -- "[${STR_NAME}]: Arguments incorrect. Aborting";
+    exit 1;
+}
+
 logger --id --rfc5424 --tag 'debug' --priority 'user.debug' -- "[${STR_NAME}]: Arguments: (backend:${backend}; request:${req}; fqdn:${fqdn}; access-key:${key_id}; secret-key:${key_s}; object-name:${obj}; local-path:${local_path}).";
 
 perform_tooling_utility_checks "${backend}";
 
 # executions
-case "${req}" in
-    'GET')
-        case "${backend}" in
-            'OLDCURL')
-                oldcurl_get_data_from_s3 "${fqdn}" "${port}" "${key_id}" "${key_s}" "${obj}" "${local_path}";
-                method_result=${?};
-                ;;
-            'CURL')
-                curl_get_data_from_s3 "${fqdn}" "${port}" "${key_id}" "${key_s}" "${sigstring}" "${obj}" "${local_path}";
-                method_result=${?};
-                ;;
-            'WGET')
-                wget_get_data_from_s3 "${fqdn}" "${port}" "${key_id}" "${key_s}" "${obj}" "${local_path}";
-                method_result=${?};
-                ;;
-            'OPENSSL')
-                openssl_get_data_from_s3 "${fqdn}" "${port}" "${key_id}" "${key_s}" "${obj}" "${local_path}";
-                method_result=${?};
-                ;;
-            'NETCAT')
-                netcat_get_data_from_s3 "${fqdn}" "${port}" "${key_id}" "${key_s}" "${obj}" "${local_path}";
-                method_result=${?};
-                ;;
-        esac;
-        ;;
-    'HEAD')
-        case "${backend}" in
-            'OLDCURL')
-                oldcurl_head_data_from_s3 "${fqdn}" "${port}" "${key_id}" "${key_s}" "${obj}";
-                method_result=${?};
-                ;;
-            'CURL')
-                curl_head_data_from_s3 "${fqdn}" "${port}" "${key_id}" "${key_s}" "${sigstring}" "${obj}";
-                method_result=${?};
-                ;;
-            'WGET')
-                wget_head_data_from_s3 "${fqdn}" "${port}" "${key_id}" "${key_s}" "${obj}";
-                method_result=${?};
-                ;;
-            'OPENSSL')
-                openssl_head_data_from_s3 "${fqdn}" "${port}" "${key_id}" "${key_s}" "${obj}";
-                method_result=${?};
-                ;;
-            'NETCAT')
-                netcat_head_data_from_s3 "${fqdn}" "${port}" "${key_id}" "${key_s}" "${obj}";
-                method_result=${?};
-                ;;
-        esac;
-        ;;
-    'PUT')
-        case "${backend}" in
-            'OLDCURL')
-                oldcurl_put_data_to_s3 "${fqdn}" "${port}" "${key_id}" "${key_s}" "${obj}" "${local_path}";
-                method_result=${?};
-                ;;
-            'CURL')
-                curl_put_data_to_s3 "${fqdn}" "${port}" "${key_id}" "${key_s}" "${sigstring}" "${obj}" "${local_path}";
-                method_result=${?};
-                ;;
-            'WGET')
-                wget_put_data_to_s3 "${fqdn}" "${port}" "${key_id}" "${key_s}" "${obj}" "${local_path}";
-                method_result=${?};
-                ;;
-            'OPENSSL')
-                openssl_put_data_to_s3 "${fqdn}" "${port}" "${key_id}" "${key_s}" "${obj}" "${local_path}";
-                method_result=${?};
-                ;;
-            'NETCAT')
-                netcat_put_data_to_s3 "${fqdn}" "${port}" "${key_id}" "${key_s}" "${obj}" "${local_path}";
-                method_result=${?};
-                ;;
-        esac;
-        ;;
-    *)
-        logger --id --rfc5424 --stderr --tag 'error' --priority 'user.error' -- "[${STR_NAME}]: ${0} provided request method - ${req} - is incorrect. Aborting.";
-        exit 1;
-        ;;
-esac;
-
+perform_request_to_s3 "${req}" "${backend}" "${fqdn}" "${port}" "${key_id}" "${key_s}" "${obj}" "${local_path}" "${sigstring}";
 method_result=${?};
 logger --id --rfc5424 --tag 'debug' --priority 'user.debug' -- "[${STR_NAME}]: subroutine return code: ${method_result}";
 
