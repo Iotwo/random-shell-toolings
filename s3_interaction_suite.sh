@@ -75,7 +75,7 @@ function perform_access_checks() {
         return 1; 
     }
     fi;
-    if [ ! -w "${1}" ]; 
+    if [ ! -r "${1}" ]; 
     then {
         logger --id --rfc5424 --stderr --tag 'error' --priority 'local7.error' -- "[${STR_NAME}]: perform_access_checks, file \'${1}\' is not readable!";
         return 1;
@@ -259,7 +259,7 @@ function oldcurl_head_data_from_s3() {
                     --header "Date: ${dt_val}" \
                     --header 'Content-Type: application/octet-stream' \
                     --header "Authorization: AWS ${3}:${signature}" \
-                    --write-out "%{http_code},header%{content-length}" \
+                    --write-out "%{http_code}" \
                     --output '/dev/null' \
                     --url "https://${1}:${2}/${5}";)";
     response_code=$(echo "${response}" | tail --lines 1 | cut --delimiter=',' --fields=1;);
@@ -1268,25 +1268,96 @@ function perform_request_to_s3() {
     header_date="Date: ${dt_val}";
     header_host="Host: ${3}";
 
-    case "${1}" in 
-        'GET')
-            ;;
-        'HEAD')
-            ;;
-        'PUT')
-            ;;
-    esac;
-
     case "${2}" in
         'CURL')
+            case "${1}" in 
+                'GET')
+                    ;;
+                'HEAD')
+                    ;;
+                'PUT')
+                    ;;
+            esac;
             ;;
         'NETCAT')
+            case "${1}" in 
+                'GET')
+                    ;;
+                'HEAD')
+                    ;;
+                'PUT')
+                    ;;
+            esac;
             ;;
         'OLDCURL')
+            case "${1}" in 
+                'GET')
+                    if [ -z "${6}" ]; 
+                    then {
+                        logger --id --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[${STR_NAME}]: Argument \'local path\' is not set. Downloaded data will be saved with s3-object name.";
+                        response_code="$(curl --location --silent --request 'GET' \
+                                            --remote-name \
+                                            --header "${header_host}" \
+                                            --header "${header_date}" \
+                                            --header "${header_content_type}" \
+                                            --header "${header_authorization}" \
+                                            --write-out "%{http_code}" \
+                                            --url "https://${1}:${2}/${5}";)";
+                    }
+                    else {
+                        logger --id --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[${STR_NAME}]: Argument \'local path\' is set. Downloaded data will be saved as ${5}.";
+                        response_code="$(curl --location --silent --request 'GET' \
+                                            --output "${6}" \
+                                            --header "${header_host}" \
+                                            --header "${header_date}" \
+                                            --header "${header_content_type}" \
+                                            --header "${header_authorization}" \
+                                            --write-out "%{http_code}" \
+                                            --url "https://${1}:${2}/${5}";)";
+                    }
+                    fi;
+                    ;;
+                'HEAD')
+                    response="$(curl --location --silent --head \
+                                    --header "${header_host}" \
+                                    --header "${header_date}" \
+                                    --header "${header_content_type}" \
+                                    --header "${header_authorization}" \
+                                    --write-out "%{http_code}" \
+                                    --output '/dev/null' \
+                                    --url "https://${1}:${2}/${5}";)";
+                    ;;
+                'PUT')
+                    response_code="$(curl --location --silent --request 'PUT' \
+                                        --header "${header_host}" \
+                                        --header "${header_date}" \
+                                        --header "${header_content_type}" \
+                                        --header "${header_authorization}" \
+                                        --write-out "%{http_code}" \
+                                        --upload-file "${6}" \
+                                        --url "https://${1}:${2}/${5}";)";
+                    ;;
+            esac;
             ;;
         'OPENSSL')
+            case "${1}" in 
+                'GET')
+                    ;;
+                'HEAD')
+                    ;;
+                'PUT')
+                    ;;
+            esac;
             ;;
         'WGET')
+            case "${1}" in 
+                'GET')
+                    ;;
+                'HEAD')
+                    ;;
+                'PUT')
+                    ;;
+            esac;
             ;;
     esac;
 }
