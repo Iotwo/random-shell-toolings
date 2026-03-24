@@ -1267,7 +1267,9 @@ function perform_request_to_s3() {
     header_authorization="Authorization: AWS ${5}:${signature}";
     header_date="Date: ${dt_val}";
     header_host="Host: ${3}";
-    header_content_len="Contetn-Length: $(wc --bytes < "${8}")";
+    if [[ -z "${8}" ]];
+    then { header_content_len="Contetn-Length: $(wc --bytes < "${8}")"; };
+    fi;
 
     case "${2}" in
         'CURL')
@@ -1439,7 +1441,7 @@ function perform_request_to_s3() {
             ;;
     esac;
 
-    if [ "${1}" == "GET" && "${2}" == "NETCAT" || "${2}" == "OPENSSL" ];
+    if [ "${1}" == "GET" ] && [ "${2}" == "NETCAT" ] || [ "${2}" == "OPENSSL" ];
     then {
         logger --id --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[${STR_NAME}]:  Processing recieved object...";
         logger --id --rfc5424 --stderr --tag 'info' --priority 'local7.info' -- "[${STR_NAME}]: Might work incorrectly with binary types!";
