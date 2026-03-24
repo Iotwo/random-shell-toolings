@@ -1267,53 +1267,92 @@ function perform_request_to_s3() {
     header_authorization="Authorization: AWS ${5}:${signature}";
     header_date="Date: ${dt_val}";
     header_host="Host: ${3}";
+    header_content_len="Contetn-Length: $(wc --bytes < "${8}")";
 
     case "${2}" in
         'CURL')
             case "${1}" in 
                 'GET')
+                    if [ -z "${7}" ]; 
+                    then {
+                        logger --id --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[${STR_NAME}]: Argument \'local path\' is not set. Downloaded data will be saved with s3-object name.";
+                        response="$(curl --location --silent --request 'GET' \
+                                           --header "${header_content_type}" \
+                                           --aws-sigv4 "${9}" \
+                                           --user "${5}:${6}" \
+                                           --write-out "%{response_code}" \
+                                           --url "https://${3}:${4}/${7}" \
+                                           --remote-name;)";
+                    }
+                    else {
+                        logger --id --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[${STR_NAME}]: Argument \'local path\' is set. Downloaded data will be saved as ${8}.";
+                        response="$(curl --location --silent --request 'GET' \
+                                           --header "${header_content_type}" \
+                                           --aws-sigv4 "${9}" \
+                                           --user "${5}:${6}" \
+                                           --write-out "%{response_code}" \
+                                           --url "https://${3}:${4}/${7}" \
+                                           --output "${8}";)";
+                    }
+                    fi;
                     ;;
                 'HEAD')
+                    response="$(curl --silent --location --head \
+                                    --header "${header_content_type}" \
+                                    --aws-sigv4 "${9}" \
+                                    --user "${5}:${6}" \
+                                    --write-out "%{response_code}" \
+                                    --url "https://${3}:${4}/${7}";)";
                     ;;
                 'PUT')
+                    response="$(curl --location --silent --request 'PUT' \
+                         --header "${header_content_type}" \
+                         --aws-sigv4 "${5}" \
+                         --user "${3}:${4}" \
+                         --write-out "%{response_code}" \
+                         --url "https://${1}:${2}/${6}" \
+                         --upload-file "${7}";)";
                     ;;
             esac;
             ;;
         'NETCAT')
-            case "${1}" in 
-                'GET')
-                    ;;
-                'HEAD')
-                    ;;
-                'PUT')
-                    ;;
-            esac;
+            (printf "${query_line}\r\n";
+             printf "${header_accept}\r\n";
+             printf "${header_content_len}\r\n";
+             printf "${header_content_type}\r\n";
+             printf "${header_date}\r\n";
+             printf "${header_host}\r\n";
+             printf "${header_user_agent}\r\n";
+             printf "${header_authorization}\r\n";
+             printf "\r\n";) |\
+            netcat "${3}" "${4}" > "${8}.tmp";
+            response_code=$(head --silent --lines=1 "${8}.tmp" | awk -F' ' '/HTTP\/[0-9.]+/{print $2}';);
             ;;
         'OLDCURL')
             case "${1}" in 
                 'GET')
-                    if [ -z "${6}" ]; 
+                    if [ -z "${8}" ]; 
                     then {
                         logger --id --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[${STR_NAME}]: Argument \'local path\' is not set. Downloaded data will be saved with s3-object name.";
-                        response_code="$(curl --location --silent --request 'GET' \
-                                            --remote-name \
-                                            --header "${header_host}" \
-                                            --header "${header_date}" \
-                                            --header "${header_content_type}" \
-                                            --header "${header_authorization}" \
-                                            --write-out "%{http_code}" \
-                                            --url "https://${1}:${2}/${5}";)";
+                        response="$(curl --location --silent --request 'GET' \
+                                        --header "${header_host}" \
+                                        --header "${header_date}" \
+                                        --header "${header_content_type}" \
+                                        --header "${header_authorization}" \
+                                        --write-out "%{http_code}" \
+                                        --url "https://${3}:${4}/${7}" \
+                                        --remote-name ;)";
                     }
                     else {
                         logger --id --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[${STR_NAME}]: Argument \'local path\' is set. Downloaded data will be saved as ${5}.";
-                        response_code="$(curl --location --silent --request 'GET' \
-                                            --output "${6}" \
-                                            --header "${header_host}" \
-                                            --header "${header_date}" \
-                                            --header "${header_content_type}" \
-                                            --header "${header_authorization}" \
-                                            --write-out "%{http_code}" \
-                                            --url "https://${1}:${2}/${5}";)";
+                        response="$(curl --location --silent --request 'GET' \
+                                        --header "${header_host}" \
+                                        --header "${header_date}" \
+                                        --header "${header_content_type}" \
+                                        --header "${header_authorization}" \
+                                        --write-out "%{http_code}" \
+                                        --url "https://${3}:${4}/${7}" \
+                                        --output "${8}";)";
                     }
                     fi;
                     ;;
@@ -1325,42 +1364,92 @@ function perform_request_to_s3() {
                                     --header "${header_authorization}" \
                                     --write-out "%{http_code}" \
                                     --output '/dev/null' \
-                                    --url "https://${1}:${2}/${5}";)";
+                                    --url "https://${3}:${4}/${7}";)";
                     ;;
                 'PUT')
-                    response_code="$(curl --location --silent --request 'PUT' \
-                                        --header "${header_host}" \
-                                        --header "${header_date}" \
-                                        --header "${header_content_type}" \
-                                        --header "${header_authorization}" \
-                                        --write-out "%{http_code}" \
-                                        --upload-file "${6}" \
-                                        --url "https://${1}:${2}/${5}";)";
+                    response="$(curl --location --silent --request 'PUT' \
+                                    --header "${header_host}" \
+                                    --header "${header_date}" \
+                                    --header "${header_content_type}" \
+                                    --header "${header_authorization}" \
+                                    --write-out "%{http_code}" \
+                                    --url "https://${3}:${4}/${7}" \
+                                    --upload-file "${8}";)";
                     ;;
             esac;
             ;;
         'OPENSSL')
-            case "${1}" in 
-                'GET')
-                    ;;
-                'HEAD')
-                    ;;
-                'PUT')
-                    ;;
-            esac;
+            (printf "${query_line}\r\n";
+             printf "${header_accept}\r\n";
+             printf "${header_content_len}\r\n";
+             printf "${header_content_type}\r\n";
+             printf "${header_date}\r\n";
+             printf "${header_host}\r\n";
+             printf "${header_user_agent}\r\n";
+             printf "${header_authorization}\r\n";
+             printf "\r\n";) |\
+            openssl s_client -quiet -ign_eof -connect "${3}:${4}" > "${8}.tmp";
+            response_code=$(head --silent --lines=1 "${8}.tmp" | awk -F' ' '/HTTP\/[0-9.]+/{print $2}';);
+            
             ;;
         'WGET')
             case "${1}" in 
                 'GET')
+                    if [ -z "${8}" ];
+                    then {
+                        response="$(wget --quiet --no-check-certificate --no-http-keep-alive --server-response --method='GET' \
+                                        --header="${header_authorization}" \
+                                        --header="${header_content_type}" \
+                                        --header="${header_date}" \
+                                        --header="${header_host}" \
+                                        "https://${3}:${4}/${7}")";
+                    }
+                    else {
+                        response="$(wget --quiet --no-check-certificate --no-http-keep-alive --server-response --method='GET' \
+                                        --header="${header_authorization}" \
+                                        --header="${header_content_type}" \
+                                        --header="${header_date}" \
+                                        --header="${header_host}" \
+                                        --output-document="${8}" \
+                                        "https://${3}:${4}/${7}")";
+                    }
+                    fi;
                     ;;
                 'HEAD')
+                    response="$(wget --quiet --no-check-certificate --no-http-keep-alive --server-response --method='HEAD' \
+                                    --header="${header_authorization}" \
+                                    --header="${header_content_type}" \
+                                    --header="${header_date}" \
+                                    --header="${header_host}" \
+                                    --spider  \
+                                    "https://${3}:${4}/${7}")";
                     ;;
                 'PUT')
+                    response="$(wget --quiet --no-check-certificate --no-http-keep-alive --server-response --method='PUT' \
+                                    --header="${header_authorization}" \
+                                    --header="${header_content_type}" \
+                                    --header="${header_date}" \
+                                    --header="${header_host}" \
+                                    --header= "${header_content_len}"\
+                                    --body-file="${8}" \
+                                    "https://${3}:${4}/${7}";)";
                     ;;
             esac;
+            # awk -F' ' '/HTTP\/[0-9.]+/{print $2}';
             ;;
     esac;
+
+    if [ "${1}" == "GET" && "${2}" == "NETCAT" || "${2}" == "OPENSSL" ];
+    then {
+        logger --id --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[${STR_NAME}]:  Processing recieved object...";
+        logger --id --rfc5424 --stderr --tag 'info' --priority 'local7.info' -- "[${STR_NAME}]: Might work incorrectly with binary types!";
+        tr -d '\r' < "${8}.tmp" | sed '1,/^$/d' > "${8}";
+    }
+    fi;
+    logger --id --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[${STR_NAME}]: Performing cleanup, removing ${8}.tmp.";
+    rm -f "${8}.tmp";
 }
+
 
 function print_help() {
     logger --id --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[${STR_NAME}]: help, func called.";
