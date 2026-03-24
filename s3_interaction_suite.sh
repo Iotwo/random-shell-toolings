@@ -231,8 +231,7 @@ function perform_request_to_s3() {
             logger --id --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[${STR_NAME}]: perform_request_to_s3, performing \'${1}\' request.";
             case "${1}" in 
                 'GET')
-                    if [ -z "${7}" ]; 
-                    then {
+                    if [ -z "${7}" ]; then {
                         logger --id --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[${STR_NAME}]: perform_request_to_s3, Argument \'local path\' is not set. Downloaded data will be saved with s3-object name.";
                         response="$(curl --location --silent --request 'GET' \
                                            --header "${header_content_type}" \
@@ -288,8 +287,7 @@ function perform_request_to_s3() {
              printf "${header_user_agent}\r\n";
              printf "${header_authorization}\r\n";
              printf "\r\n";
-             if [ "${1}" == 'PUT' ];
-             then { cat "${8}"; }
+             if [ "${1}" == 'PUT' ]; then { cat "${8}"; }
              fi; ) |\
             netcat "${3}" "${4}" > "${8}.tmp";
             
@@ -301,8 +299,7 @@ function perform_request_to_s3() {
             logger --id --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[${STR_NAME}]: perform_request_to_s3, perform_request_to_s3, performing \'${1}\' request.";
             case "${1}" in 
                 'GET')
-                    if [ -z "${8}" ]; 
-                    then {
+                    if [ -z "${8}" ]; then {
                         logger --id --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[${STR_NAME}]: Argument \'local path\' is not set. Downloaded data will be saved with s3-object name.";
                         response="$(curl --location --silent --request 'GET' \
                                         --header "${header_host}" \
@@ -363,8 +360,7 @@ function perform_request_to_s3() {
              printf "${header_user_agent}\r\n";
              printf "${header_authorization}\r\n";
              printf "\r\n"
-             if [ "${1}" == 'PUT' ];
-             then { cat "${8}"; }
+             if [ "${1}" == 'PUT' ]; then { cat "${8}"; }
              fi; ) |\
             openssl s_client -quiet -ign_eof -connect "${3}:${4}" > "${8}.tmp";
 
@@ -376,8 +372,7 @@ function perform_request_to_s3() {
             logger --id --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[${STR_NAME}]: perform_request_to_s3, performing \'${1}\' request.";
             case "${1}" in 
                 'GET')
-                    if [ -z "${8}" ];
-                    then {
+                    if [ -z "${8}" ]; then {
                         logger --id --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[${STR_NAME}]: perform_request_to_s3, ";
                         response="$(wget --quiet --no-check-certificate --no-http-keep-alive --server-response --method='GET' \
                                         --header="${header_authorization}" \
@@ -426,15 +421,13 @@ function perform_request_to_s3() {
     esac;
 
     logger --id --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[${STR_NAME}]: perform_request_to_s3, Processing response...";
-    if [ "${response_code}" == "200" ];
-    then {
+    if [ "${response_code}" == "200" ]; then {
         logger --id --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[$STR_NAME]: perform_request_to_s3, Request executed successfully.";
         
         case "${1}" in
             'GET')
                 logger --id --rfc5424 --stderr --tag 'info' --priority 'local7.info' -- "[$STR_NAME]: perform_request_to_s3, Response code: ${response_code}. Object ${7} downloaded.";
-                if [ "${2}" == "NETCAT" ] || [ "${2}" == "OPENSSL" ];
-                then {
+                if [ "${2}" == "NETCAT" ] || [ "${2}" == "OPENSSL" ]; then {
                     logger --id --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[${STR_NAME}]: perform_request_to_s3, Processing recieved object...";
                     logger --id --rfc5424 --stderr --tag 'info' --priority 'local7.info' -- "[${STR_NAME}]: perform_request_to_s3, Might work incorrectly with binary types!";
                     tr -d '\r' < "${8}.tmp" | sed '1,/^$/d' > "${8}";
@@ -452,16 +445,14 @@ function perform_request_to_s3() {
         logger --id --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[$STR_NAME]: perform_request_to_s3, Function exited with code 0.";
         exit_code=0;
     }
-    elif [ "${response_code}" == "404" ];
-    then {
+    elif [ "${response_code}" == "404" ]; then {
         logger --id --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[$STR_NAME]: perform_request_to_s3, Request executed successfully.";
         logger --id --rfc5424 --stderr --tag 'info' --priority 'local7.info' -- "[$STR_NAME]: perform_request_to_s3, Response code: ${response_code}. Requested object is missing on the resource.";
         exit_code=0;
     }
     else {
         logger --id --rfc5424 --stderr --tag 'warning' --priority 'local7.warning' -- "[$STR_NAME]: perform_request_to_s3, Something went wrong.";
-        if [ "${2}" == "NETCAT" ] || [ "${2}" == "OPENSSL" ];
-        then {
+        if [ "${2}" == "NETCAT" ] || [ "${2}" == "OPENSSL" ]; then {
             cat "${6}.tmp";
         }
         fi;
@@ -469,8 +460,7 @@ function perform_request_to_s3() {
     }
     fi;
 
-    if [ "${2}" == "NETCAT" ] || [ "${2}" == "OPENSSL" ];
-    then {
+    if [ "${2}" == "NETCAT" ] || [ "${2}" == "OPENSSL" ]; then {
         logger --id --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[${STR_NAME}]: perform_request_to_s3, Performing cleanup, removing ${8}.tmp.";
         rm -f "${8}.tmp";
     }
@@ -511,21 +501,22 @@ function print_help() {
 perform_basic_utility_checks;
 
 logger --id --rfc5424 --stderr --tag 'info' --priority 'user.info' -- "[${STR_NAME}]: Start ${0}." 
-logger --id --rfc5424 --tag 'debug' --priority 'user.debug' -- "[${STR_NAME}]: Arguments count: ${#}. Arguments: (${*}).";
+
 
 # argument parsing
-if [ ${#} -eq 0 ]; 
-then {
+if [ ${#} -eq 0 ]; then {
     logger --id --rfc5424 --stderr --tag 'info' --priority 'user.info' -- "[${STR_NAME}]: Script called with ${#} arguments. Printing help and exit." 
     print_help;
     logger --id --rfc5424 --stderr --tag 'info' --priority 'user.info' -- "[${STR_NAME}]: ${0} finished.";
     exit 0;
 }
+else {
+    logger --id --rfc5424 --tag 'debug' --priority 'user.debug' -- "[${STR_NAME}]: Arguments count: ${#}. Arguments: (${*}).";
+}
 fi;
 
 # agument processing
-while getopts "${STR_SHORT_O}" name; 
-do {
+while getopts "${STR_SHORT_O}" name; do {
     case "${name}" in
         'a')  # s3 bucket access key
              key_id="${OPTARG}";
@@ -660,15 +651,19 @@ case "${req}" in
         exit 1;
         ;;
 esac;
+
+method_result=${?};
 logger --id --rfc5424 --tag 'debug' --priority 'user.debug' -- "[${STR_NAME}]: subroutine return code: ${method_result}";
 
 # process result
-if [ ${method_result} -eq 0 ]; then
+if [ ${method_result} -eq 0 ]; then {
     logger --id --rfc5424 --stderr --tag 'info' --priority 'user.info' -- "[${STR_NAME}]: Task executed successfully.";
     logger --id --rfc5424 --stderr --tag 'info' --priority 'user.info' -- "[${STR_NAME}]: ${0} finished.";
+}
     exit 0;
-else
+else {
     logger --id --rfc5424 --stderr --tag 'warning' --priority 'user.warning' -- "[${STR_NAME}]: Error occured on task execution.";
     logger --id --rfc5424 --stderr --tag 'info' --priority 'user.info' -- "[${STR_NAME}]: ${0} finished with error code 1.";
     exit 1;
+}
 fi;
