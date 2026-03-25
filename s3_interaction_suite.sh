@@ -483,7 +483,7 @@ function perform_request_to_s3() {
     }
     else {
         logger --id --rfc5424 --stderr --tag 'warning' --priority 'local7.warning' -- "[$STR_NAME]: perform_request_to_s3, Something went wrong.";
-        if [ "${2}" == "NETCAT" ] || [ "${2}" == "OPENSSL" ]; then { cat "${6}.tmp"; }
+        if [ "${2}" == "NETCAT" ] || [ "${2}" == "OPENSSL" ]; then { cat "${8}.tmp"; }
         fi;
 
         exit_code=1;
