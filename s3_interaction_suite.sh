@@ -224,7 +224,7 @@ function perform_request_to_s3() {
 
     declare query_line='';
     declare header_host='';
-    declare header_content_len='0';
+    declare header_content_len='Contetn-Length: 0';
     declare header_content_type='Content-Type: application/octet-stream';
     declare header_date='';
     declare header_authorization='';
@@ -252,8 +252,8 @@ function perform_request_to_s3() {
     header_authorization="Authorization: AWS ${5}:${signature}";
     header_date="Date: ${dt_val}";
     header_host="Host: ${3}";
-    if [[ -z "${8}" ]];
-    then { header_content_len="Contetn-Length: $(wc --bytes < "${8}")"; };
+    if [ -z "${8}" ];
+    then { echo 'GET LENGTH!!'; header_content_len="Contetn-Length: $(wc --bytes < "${8}")"; };
     fi;
 
     logger --id --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[${STR_NAME}]: perform_request_to_s3, ${2} selected as backend.";
