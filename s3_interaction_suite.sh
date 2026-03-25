@@ -252,7 +252,7 @@ function perform_request_to_s3() {
     header_authorization="Authorization: AWS ${5}:${signature}";
     header_date="Date: ${dt_val}";
     header_host="Host: ${3}";
-    if [ -z "${8}" ];
+    if [ -n "${8}" ];
     then { echo 'GET LENGTH!!'; header_content_len="Contetn-Length: $(wc --bytes < "${8}")"; };
     fi;
 
