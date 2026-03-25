@@ -606,7 +606,6 @@ if [ ${method_result} -ne 0 ]; then {
     logger --id --rfc5424 --stderr --tag 'error' --priority 'user.error' -- "[${STR_NAME}]: Arguments incorrect. Aborting";
     exit 1;
 }
-
 logger --id --rfc5424 --tag 'debug' --priority 'user.debug' -- "[${STR_NAME}]: Arguments: (backend:${backend}; request:${req}; fqdn:${fqdn}; port:${port}; access-key:${key_id}; secret-key:${key_s}; object-name:${obj}; local-path:${local_path}; aws-sigv4-string:${sigstring}).";
 
 perform_tooling_utility_checks "${backend}";
