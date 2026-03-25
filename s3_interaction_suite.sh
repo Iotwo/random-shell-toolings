@@ -625,7 +625,7 @@ logger --id --rfc5424 --tag 'debug' --priority 'user.debug' -- "[${STR_NAME}]: A
 perform_tooling_utility_checks "${backend}";
 
 # executions
-perform_request_to_s3 "${req}" "${backend}" "${fqdn}" "${port}" "${key_id}" "${key_s}" "${obj}" "${local_path}" "${sigstring}" "${http_ver}" "${uri_schema};
+perform_request_to_s3 "${req}" "${backend}" "${fqdn}" "${port}" "${key_id}" "${key_s}" "${obj}" "${local_path}" "${sigstring}" "${http_ver}" "${uri_schema}";
 method_result=${?};
 logger --id --rfc5424 --tag 'debug' --priority 'user.debug' -- "[${STR_NAME}]: subroutine return code: ${method_result}";
 
