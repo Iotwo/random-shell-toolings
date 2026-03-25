@@ -313,6 +313,7 @@ function perform_request_to_s3() {
             ;;
         'NETCAT')
             logger --id --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[${STR_NAME}]: perform_request_to_s3, performing \'${1}\' request.";
+            header_user_agent='User-Agent: netcat/v1.10-50)';
             (printf '%s\r\n' "${query_line}";
              printf '%s\r\n' "${header_accept}";
              if [ "${1}" == 'PUT' ]; then { printf '%s\r\n' "${header_content_len}"; }
@@ -387,6 +388,7 @@ function perform_request_to_s3() {
             ;;
         'OPENSSL')
             logger --id --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[${STR_NAME}]: perform_request_to_s3, performing \'${1}\' request.";
+            header_user_agent="User-Agent: $(openssl --version 2>&1 | cut --delimiter=' ' --fields='1,2' --output-delimiter='/')";
             (printf '%s\r\n' "${query_line}";
              printf '%s\r\n' "${header_accept}";
              if [ "${1}" == 'PUT' ]; then { printf '%s\r\n' "${header_content_len}"; }
