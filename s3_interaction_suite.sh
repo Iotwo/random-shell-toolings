@@ -235,15 +235,11 @@ function perform_request_to_s3() {
     declare header_accept='Accept: */*';
     declare header_user_agent='';
 
-    dt_val="$(date -R)";
-    str_to_sign="${1}\n\napplication/octet-stream\n${dt_val}\n/${7}";
-    signature="$(echo -en "${str_to_sign}" | openssl sha1 -hmac "${6}" -binary | base64 -)";
-
     if [ "${1}" == "PUT" ]; then {
         logger --id --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[${STR_NAME}]: perform_request_to_s3, checking file permissions for ${1} request.";
         perform_access_checks "${8}";
-        response_code=${?};
-        if [ ${response_code} -ne 0 ];  then {
+        method_result=${?};
+        if [ ${method_result} -ne 0 ];  then {
             logger --id --rfc5424 --stderr --tag 'error' --priority 'local7.error' -- "[${STR_NAME}]: perform_request_to_s3, ${1} request cannot be performed, not enough permissions.";
             return 1;
         }
@@ -252,12 +248,16 @@ function perform_request_to_s3() {
     }
     fi;
 
+    dt_val="$(date -R)";
+    str_to_sign="${1}\n\napplication/octet-stream\n${dt_val}\n/${7}";
+    signature="$(echo -en "${str_to_sign}" | openssl sha1 -hmac "${6}" -binary | base64 -)";
+
     query_line="${1} /${7} HTTP/${10}";
     header_authorization="Authorization: AWS ${5}:${signature}";
     header_date="Date: ${dt_val}";
     header_host="Host: ${3}";
     if [ -n "${8}" ];
-    then { echo 'GET LENGTH!!'; header_content_len="Contetn-Length: $(wc --bytes < "${8}")"; };
+    then { header_content_len="Contetn-Length: $(wc --bytes < "${8}")"; };
     fi;
 
     logger --id --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[${STR_NAME}]: perform_request_to_s3, ${2} selected as backend.";
