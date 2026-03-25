@@ -295,11 +295,11 @@ function perform_request_to_s3() {
                 'PUT')
                     response="$(curl --location --silent --request 'PUT' \
                          --header "${header_content_type}" \
-                         --aws-sigv4 "${5}" \
-                         --user "${3}:${4}" \
+                         --aws-sigv4 "${9}" \
+                         --user "${5}:${6}" \
                          --write-out "%{response_code}" \
-                         --url "https://${1}:${2}/${6}" \
-                         --upload-file "${7}";)";
+                         --url "https://${3}:${4}/${7}" \
+                         --upload-file "${8}";)";
                     ;;
             esac;
 
