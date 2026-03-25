@@ -9,7 +9,7 @@
 # constants and variables declaration
 declare STR_NAME="$(basename "${0}")";
 declare STR_SHORT_O=":b:,r:,f:,p:,S:,a:,s:,o:,l:,h";
-declare args_passed="";
+#declare args_passed="";
 
 declare backend='OLDCURL';
 declare req='';
@@ -163,7 +163,7 @@ function perform_tooling_utility_checks() {
             exit 1;
             ;;
     esac;
-    if [ -z ${exists} ];
+    if [ -z "${exists}" ];
     then {
         logger --id --rfc5424 --stderr --tag 'error' --priority 'local7.error' -- "[${STR_NAME}]: perform_tooling_utility_checks, backend ${1} does not persist in the system. Aborting with error.";
         exit 1;
@@ -190,7 +190,6 @@ function perform_tooling_utility_checks() {
         exit 1;
     }
     fi;
-    ;;
 
     logger --id --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[${STR_NAME}]: perform_tooling_utility_checks, choosen backend persist.";
 
@@ -310,15 +309,15 @@ function perform_request_to_s3() {
             ;;
         'NETCAT')
             logger --id --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[${STR_NAME}]: perform_request_to_s3, performing \'${1}\' request.";
-            (printf "${query_line}\r\n";
-             printf "${header_accept}\r\n";
-             printf "${header_content_len}\r\n";
-             printf "${header_content_type}\r\n";
-             printf "${header_date}\r\n";
-             printf "${header_host}\r\n";
-             printf "${header_user_agent}\r\n";
-             printf "${header_authorization}\r\n";
-             printf "\r\n";
+            (printf '%s\r\n' "${query_line}";
+             printf '%s\r\n' "${header_accept}";
+             printf '%s\r\n' "${header_content_len}";
+             printf '%s\r\n' "${header_content_type}";
+             printf '%s\r\n' "${header_date}";
+             printf '%s\r\n' "${header_host}";
+             printf '%s\r\n' "${header_user_agent}";
+             printf '%s\r\n' "${header_authorization}";
+             printf '\r\n';
              if [ "${1}" == 'PUT' ]; then { cat "${8}"; }
              fi; ) |\
             netcat "${3}" "${4}" > "${8}.tmp";
@@ -383,15 +382,15 @@ function perform_request_to_s3() {
             ;;
         'OPENSSL')
             logger --id --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[${STR_NAME}]: perform_request_to_s3, performing \'${1}\' request.";
-            (printf "${query_line}\r\n";
-             printf "${header_accept}\r\n";
-             printf "${header_content_len}\r\n";
-             printf "${header_content_type}\r\n";
-             printf "${header_date}\r\n";
-             printf "${header_host}\r\n";
-             printf "${header_user_agent}\r\n";
-             printf "${header_authorization}\r\n";
-             printf "\r\n"
+            (printf '%s\r\n' "${query_line}";
+             printf '%s\r\n' "${header_accept}";
+             printf '%s\r\n' "${header_content_len}";
+             printf '%s\r\n' "${header_content_type}";
+             printf '%s\r\n' "${header_date}";
+             printf '%s\r\n' "${header_host}";
+             printf '%s\r\n' "${header_user_agent}";
+             printf '%s\r\n' "${header_authorization}";
+             printf '\r\n';
              if [ "${1}" == 'PUT' ]; then { cat "${8}"; }
              fi; ) |\
             openssl s_client -quiet -ign_eof -connect "${3}:${4}" > "${8}.tmp";
@@ -606,6 +605,7 @@ if [ ${method_result} -ne 0 ]; then {
     logger --id --rfc5424 --stderr --tag 'error' --priority 'user.error' -- "[${STR_NAME}]: Arguments incorrect. Aborting";
     exit 1;
 }
+fi;
 logger --id --rfc5424 --tag 'debug' --priority 'user.debug' -- "[${STR_NAME}]: Arguments: (backend:${backend}; request:${req}; fqdn:${fqdn}; port:${port}; access-key:${key_id}; secret-key:${key_s}; object-name:${obj}; local-path:${local_path}; aws-sigv4-string:${sigstring}).";
 
 perform_tooling_utility_checks "${backend}";
