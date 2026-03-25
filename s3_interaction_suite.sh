@@ -304,9 +304,7 @@ function perform_request_to_s3() {
             esac;
 
             logger --id --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[${STR_NAME}]: perform_request_to_s3, request performed. Parsing result.";
-            response_code=${response};
-            echo -en "RESPONSE:${response}\n\n\n";
-            echo -en "RESPONSE:${response_code}\n\n\n";
+            response_code=$(echo "${response}" | tail --lines 1 | cut --delimiter=',' --fields=1;);
             logger --id --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[${STR_NAME}]: perform_request_to_s3, Result parsed.";
             ;;
         'NETCAT')
