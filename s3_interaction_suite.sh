@@ -8,7 +8,7 @@
 
 # constants and variables declaration
 declare STR_NAME="$(basename "${0}")";
-declare STR_SHORT_O=":b:,r:,f:,p:,S:,a:,s:,o:,l:,h";
+declare STR_SHORT_O=":b:,r:,f:,p:,S:,a:,s:,o:,l:,H:,u:,h";
 #declare args_passed="";
 
 declare backend='OLDCURL';
@@ -20,6 +20,8 @@ declare key_id='';
 declare key_s='';
 declare obj='';
 declare local_path='';
+declare http_ver='2';
+declare uri_schema='https';
 
 declare -i method_result=-1;
 
@@ -210,6 +212,8 @@ function perform_request_to_s3() {
     #   (7) - Object name (with bucket)
     #   (8) - Local file name (optional)
     #   (9) - AWS sigstring (optional)
+    #   (10) - HTTP protocol version (optional)
+    #   (11) - URI resource access schema (optional)
     ############################################################
 
     logger --id --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[${STR_NAME}]: perform_request_to_s3, func called with args(${#}): [${*}].";
@@ -248,7 +252,7 @@ function perform_request_to_s3() {
     }
     fi;
 
-    query_line="${1} /${7} HTTP/1.1";
+    query_line="${1} /${7} HTTP/${10}";
     header_authorization="Authorization: AWS ${5}:${signature}";
     header_date="Date: ${dt_val}";
     header_host="Host: ${3}";
@@ -269,7 +273,7 @@ function perform_request_to_s3() {
                                            --aws-sigv4 "${9}" \
                                            --user "${5}:${6}" \
                                            --write-out "%{response_code}" \
-                                           --url "https://${3}:${4}/${7}" \
+                                           --url "${11}://${3}:${4}/${7}" \
                                            --remote-name;)";
                     }
                     else {
@@ -279,7 +283,7 @@ function perform_request_to_s3() {
                                            --aws-sigv4 "${9}" \
                                            --user "${5}:${6}" \
                                            --write-out "%{response_code}" \
-                                           --url "https://${3}:${4}/${7}" \
+                                           --url "${11}://${3}:${4}/${7}" \
                                            --output "${8}";)";
                     }
                     fi;
@@ -290,7 +294,7 @@ function perform_request_to_s3() {
                                     --aws-sigv4 "${9}" \
                                     --user "${5}:${6}" \
                                     --write-out "%{response_code}" \
-                                    --url "https://${3}:${4}/${7}";)";
+                                    --url "${11}://${3}:${4}/${7}";)";
                     ;;
                 'PUT')
                     response="$(curl --location --silent --request 'PUT' \
@@ -298,7 +302,7 @@ function perform_request_to_s3() {
                          --aws-sigv4 "${9}" \
                          --user "${5}:${6}" \
                          --write-out "%{response_code}" \
-                         --url "https://${3}:${4}/${7}" \
+                         --url "${11}://${3}:${4}/${7}" \
                          --upload-file "${8}";)";
                     ;;
             esac;
@@ -339,7 +343,7 @@ function perform_request_to_s3() {
                                         --header "${header_content_type}" \
                                         --header "${header_authorization}" \
                                         --write-out "%{http_code}" \
-                                        --url "https://${3}:${4}/${7}" \
+                                        --url "${11}://${3}:${4}/${7}" \
                                         --remote-name ;)";
                     }
                     else {
@@ -350,7 +354,7 @@ function perform_request_to_s3() {
                                         --header "${header_content_type}" \
                                         --header "${header_authorization}" \
                                         --write-out "%{http_code}" \
-                                        --url "https://${3}:${4}/${7}" \
+                                        --url "${11}://${3}:${4}/${7}" \
                                         --output "${8}";)";
                     }
                     fi;
@@ -363,7 +367,7 @@ function perform_request_to_s3() {
                                     --header "${header_authorization}" \
                                     --write-out "%{http_code}" \
                                     --output '/dev/null' \
-                                    --url "https://${3}:${4}/${7}";)";
+                                    --url "${11}://${3}:${4}/${7}";)";
                     ;;
                 'PUT')
                     response="$(curl --location --silent --request 'PUT' \
@@ -372,7 +376,7 @@ function perform_request_to_s3() {
                                     --header "${header_content_type}" \
                                     --header "${header_authorization}" \
                                     --write-out "%{http_code}" \
-                                    --url "https://${3}:${4}/${7}" \
+                                    --url "${11}://${3}:${4}/${7}" \
                                     --upload-file "${8}";)";
                     ;;
             esac;
@@ -412,7 +416,7 @@ function perform_request_to_s3() {
                                         --header="${header_content_type}" \
                                         --header="${header_date}" \
                                         --header="${header_host}" \
-                                        "https://${3}:${4}/${7}" 2>&1;)";
+                                        "${11}://${3}:${4}/${7}" 2>&1;)";
                     }
                     else {
                         logger --id --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[${STR_NAME}]: perform_request_to_s3, ";
@@ -422,7 +426,7 @@ function perform_request_to_s3() {
                                         --header="${header_date}" \
                                         --header="${header_host}" \
                                         --output-document="${8}" \
-                                        "https://${3}:${4}/${7}" 2>&1)";
+                                        "${11}://${3}:${4}/${7}" 2>&1)";
                     }
                     fi;
                     ;;
@@ -433,7 +437,7 @@ function perform_request_to_s3() {
                                     --header="${header_date}" \
                                     --header="${header_host}" \
                                     --spider  \
-                                    "https://${3}:${4}/${7}" 2>&1)";
+                                    "${11}://${3}:${4}/${7}" 2>&1)";
                     ;;
                 'PUT')
                     response="$(wget --quiet --no-check-certificate --no-http-keep-alive --server-response --method='PUT' \
@@ -443,7 +447,7 @@ function perform_request_to_s3() {
                                     --header="${header_host}" \
                                     --header= "${header_content_len}"\
                                     --body-file="${8}" \
-                                    "https://${3}:${4}/${7}" 2>&1;)";
+                                    "${11}://${3}:${4}/${7}" 2>&1;)";
                     ;;
             esac;
 
@@ -588,6 +592,14 @@ while getopts "${STR_SHORT_O}" name; do {
         'S') # s3 signature string
              sigstring="${OPTARG}";
              ;;
+        'H')
+            # http version
+            http_ver="${OPTARG}";
+            ;;
+        'u')
+            # schema type of URI
+            uri_schema="${OPTARG}";
+            ;;
         '--')
             break;
             ;;
@@ -608,12 +620,12 @@ if [ ${method_result} -ne 0 ]; then {
     exit 1;
 }
 fi;
-logger --id --rfc5424 --tag 'debug' --priority 'user.debug' -- "[${STR_NAME}]: Arguments: (backend:${backend}; request:${req}; fqdn:${fqdn}; port:${port}; access-key:${key_id}; secret-key:${key_s}; object-name:${obj}; local-path:${local_path}; aws-sigv4-string:${sigstring}).";
+logger --id --rfc5424 --tag 'debug' --priority 'user.debug' -- "[${STR_NAME}]: Arguments: (backend:${backend}; request:${req}; fqdn:${fqdn}; port:${port}; access-key:${key_id}; secret-key:${key_s}; object-name:${obj}; local-path:${local_path}; aws-sigv4-string:${sigstring}; http-version:${http_ver}; URI-schema:${uri_schema}).";
 
 perform_tooling_utility_checks "${backend}";
 
 # executions
-perform_request_to_s3 "${req}" "${backend}" "${fqdn}" "${port}" "${key_id}" "${key_s}" "${obj}" "${local_path}" "${sigstring}";
+perform_request_to_s3 "${req}" "${backend}" "${fqdn}" "${port}" "${key_id}" "${key_s}" "${obj}" "${local_path}" "${sigstring}" "${http_ver}" "${uri_schema};
 method_result=${?};
 logger --id --rfc5424 --tag 'debug' --priority 'user.debug' -- "[${STR_NAME}]: subroutine return code: ${method_result}";
 
