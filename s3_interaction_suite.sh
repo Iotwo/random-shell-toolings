@@ -311,7 +311,8 @@ function perform_request_to_s3() {
             logger --id --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[${STR_NAME}]: perform_request_to_s3, performing \'${1}\' request.";
             (printf '%s\r\n' "${query_line}";
              printf '%s\r\n' "${header_accept}";
-             printf '%s\r\n' "${header_content_len}";
+             if [ "${1}" == 'PUT' ]; then { printf '%s\r\n' "${header_content_len}"; }
+             fi;
              printf '%s\r\n' "${header_content_type}";
              printf '%s\r\n' "${header_date}";
              printf '%s\r\n' "${header_host}";
@@ -384,7 +385,8 @@ function perform_request_to_s3() {
             logger --id --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[${STR_NAME}]: perform_request_to_s3, performing \'${1}\' request.";
             (printf '%s\r\n' "${query_line}";
              printf '%s\r\n' "${header_accept}";
-             printf '%s\r\n' "${header_content_len}";
+             if [ "${1}" == 'PUT' ]; then { printf '%s\r\n' "${header_content_len}"; }
+             fi;
              printf '%s\r\n' "${header_content_type}";
              printf '%s\r\n' "${header_date}";
              printf '%s\r\n' "${header_host}";
@@ -467,10 +469,10 @@ function perform_request_to_s3() {
                 ;;
             'HEAD')
                 logger --id --rfc5424 --stderr --tag 'info' --priority 'local7.info' -- "[$STR_NAME]: perform_request_to_s3, Response code: ${response_code}. Object ${7} exists."
-            ;;
+                ;;
             'PUT')
                 logger --id --rfc5424 --stderr --tag 'info' --priority 'local7.info' -- "[$STR_NAME]: perform_request_to_s3, Response code: ${response_code}. Object ${8} uploaded as ${7}";
-            ;;
+                ;;
         esac;
 
         exit_code=0;
