@@ -305,6 +305,7 @@ function perform_request_to_s3() {
 
             logger --id --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[${STR_NAME}]: perform_request_to_s3, request performed. Parsing result.";
             response_code=${response};
+            echo "RESPONSE:${response_code}";
             logger --id --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[${STR_NAME}]: perform_request_to_s3, Result parsed.";
             ;;
         'NETCAT')
