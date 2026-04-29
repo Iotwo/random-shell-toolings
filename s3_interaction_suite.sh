@@ -62,7 +62,7 @@ function perform_access_checks() {
     #   (1) - exact file name
     ############################################################
 
-    logger --id --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[${STR_NAME}]: perform_access_checks, func called with args(${#}): [${*}].";
+    logger --id --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[${STR_NAME}]: perform_access_checks, function called with args(${#}): [${*}].";
 
     if [ -z "${1}" ]; 
     then {
@@ -103,6 +103,8 @@ function perform_args_checks() {
     #   (2) - backend
     ############################################################
 
+     logger --id --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[${STR_NAME}]: perform_args_checks, function called with args(${#}): [${*}].";
+
     logger --id --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[${STR_NAME}]: perform_args_checks, checking request type.";
     case "${1}" in
         'GET' | 'HEAD' | 'PUT')
@@ -136,7 +138,7 @@ function perform_tooling_utility_checks() {
     #   (1) - used backend
     ############################################################
 
-    logger --id --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[${STR_NAME}]: perform_tooling_utility_checks, func called with args(${#}): [${*}].";
+    logger --id --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[${STR_NAME}]: perform_tooling_utility_checks, function called with args(${#}): [${*}].";
 
     declare FLOAT_OLD_CURL_MAX_VER='8.2.1';
 
@@ -215,7 +217,7 @@ function perform_request_to_s3() {
     #   (11) - URI resource access schema (optional)
     ############################################################
 
-    logger --id --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[${STR_NAME}]: perform_request_to_s3, func called with args(${#}): [${*}].";
+    logger --id --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[${STR_NAME}]: perform_request_to_s3, function called with args(${#}): [${*}].";
 
     declare dt_val='';  # used as global var in
     declare str_to_sign='';  # used as global var 
@@ -247,6 +249,7 @@ function perform_request_to_s3() {
     }
     fi;
 
+    logger --id --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[${STR_NAME}]: perform_request_to_s3, preparing request query and headers...";
     dt_val="$(date -R)";
     str_to_sign="${1}\n\napplication/octet-stream\n${dt_val}\n/${7}";
     signature="$(echo -en "${str_to_sign}" | openssl sha1 -hmac "${6}" -binary | base64 -)";
@@ -258,6 +261,7 @@ function perform_request_to_s3() {
     if [ -n "${8}" ];
     then { header_content_len="Contetn-Length: $(wc --bytes < "${8}")"; };
     fi;
+    logger --id --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[${STR_NAME}]: perform_request_to_s3, query and headers prapared.";
 
     logger --id --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[${STR_NAME}]: perform_request_to_s3, ${2} selected as backend.";
     case "${2}" in
@@ -461,13 +465,12 @@ function perform_request_to_s3() {
     logger --id --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[${STR_NAME}]: perform_request_to_s3, Processing response...";
     if [ "${response_code}" == "200" ]; then {
         logger --id --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[$STR_NAME]: perform_request_to_s3, Request executed successfully.";
-        
         case "${1}" in
             'GET')
                 logger --id --rfc5424 --stderr --tag 'info' --priority 'local7.info' -- "[$STR_NAME]: perform_request_to_s3, Response code: ${response_code}. Object ${7} downloaded.";
                 if [ "${2}" == "NETCAT" ] || [ "${2}" == "OPENSSL" ]; then {
                     logger --id --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[${STR_NAME}]: perform_request_to_s3, Processing recieved object...";
-                    logger --id --rfc5424 --stderr --tag 'info' --priority 'local7.info' -- "[${STR_NAME}]: perform_request_to_s3, Might work incorrectly with binary types!";
+                    logger --id --rfc5424 --stderr --tag 'info' --priority 'local7.info' -- "[${STR_NAME}]: perform_request_to_s3, object recieved via ${2} might be processed incorrectly if it is binary type!";
                     tr -d '\r' < "${8}.tmp" | sed '1,/^$/d' > "${8}";
                 }
                 fi;
@@ -503,13 +506,12 @@ function perform_request_to_s3() {
     }
     fi;
 
-
     logger --id --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[$STR_NAME]: perform_request_to_s3, Function exited with code ${exit_code}.";
     return ${exit_code};
 }
 
 function print_help() {
-    logger --id --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[${STR_NAME}]: help, func called.";
+    logger --id --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[${STR_NAME}]: help, function called.";
     echo "Name: S3 interaction suite";
     echo "Description: Read meta, download objects from or upload to S3-compatible storage";
     echo "Req: read-write access on current working directory, cURL v7.64 and higher.";
@@ -624,9 +626,11 @@ if [ ${method_result} -ne 0 ]; then {
 fi;
 logger --id --rfc5424 --tag 'debug' --priority 'user.debug' -- "[${STR_NAME}]: Arguments: (backend:${backend}; request:${req}; fqdn:${fqdn}; port:${port}; access-key:${key_id}; secret-key:${key_s}; object-name:${obj}; local-path:${local_path}; aws-sigv4-string:${sigstring}; http-version:${http_ver}; URI-schema:${uri_schema}).";
 
+logger --id --rfc5424 --tag 'debug' --priority 'user.debug' -- "[${STR_NAME}]: Checking backend and supportive tooling persit in system...";
 perform_tooling_utility_checks "${backend}";
 
 # executions
+logger --id --rfc5424 --tag --stderr 'info' --priority 'user.info' -- "[${STR_NAME}]: Initiating request to endpoint...";
 perform_request_to_s3 "${req}" "${backend}" "${fqdn}" "${port}" "${key_id}" "${key_s}" "${obj}" "${local_path}" "${sigstring}" "${http_ver}" "${uri_schema}";
 method_result=${?};
 logger --id --rfc5424 --tag 'debug' --priority 'user.debug' -- "[${STR_NAME}]: subroutine return code: ${method_result}";
