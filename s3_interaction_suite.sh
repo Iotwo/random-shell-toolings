@@ -118,7 +118,7 @@ function perform_args_checks() {
 
     logger --id --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[${STR_NAME}]: perform_args_checks, checking backend value.";
     case "${1}" in
-        'GET' | 'HEAD' | 'PUT')
+        'CURL' | 'NETCAT' | 'OLDCURL' | 'OPENSSL' | 'WGET')
             logger --id --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[${STR_NAME}]: perform_args_checks, backend value is correct.";
             ;;
         *)
@@ -630,7 +630,7 @@ logger --id --rfc5424 --tag 'debug' --priority 'user.debug' -- "[${STR_NAME}]: C
 perform_tooling_utility_checks "${backend}";
 
 # executions
-logger --id --rfc5424 --tag --stderr 'info' --priority 'user.info' -- "[${STR_NAME}]: Initiating request to endpoint...";
+logger --id --rfc5424 --stderr --tag 'info' --priority 'user.info' -- "[${STR_NAME}]: Initiating request to endpoint...";
 perform_request_to_s3 "${req}" "${backend}" "${fqdn}" "${port}" "${key_id}" "${key_s}" "${obj}" "${local_path}" "${sigstring}" "${http_ver}" "${uri_schema}";
 method_result=${?};
 logger --id --rfc5424 --tag 'debug' --priority 'user.debug' -- "[${STR_NAME}]: subroutine return code: ${method_result}";
