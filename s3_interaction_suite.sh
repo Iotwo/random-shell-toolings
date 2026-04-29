@@ -9,7 +9,6 @@
 # constants and variables declaration
 declare STR_NAME="$(basename "${0}")";
 declare STR_SHORT_O=":b:,r:,f:,p:,S:,a:,s:,o:,l:,H:,u:,h";
-#declare args_passed="";
 
 declare backend='OLDCURL';
 declare req='';
@@ -536,13 +535,15 @@ function print_help() {
     echo -e "\tExample: ${0} -b WGET -r PUT -f s3.storage.ru -p 9000 -a myaccesskeytos3 -s mysecretkeytos3 -o bucket/target/object/name -l /path/to/upload/file";
 }
 
+
 # Program start
+
 perform_basic_utility_checks;
 
-logger --id --rfc5424 --stderr --tag 'info' --priority 'user.info' -- "[${STR_NAME}]: Start ${0}." 
+logger --id --rfc5424 --stderr --tag 'info' --priority 'user.info' -- "[${STR_NAME}]: Start ${0}.";
 
-
-# argument parsing
+logger --id --rfc5424 --tag 'debug' --priority 'user.debug' -- "[${STR_NAME}]: Parsing passed arguments.";
+logger --id --rfc5424 --tag 'debug' --priority 'user.debug' -- "[${STR_NAME}]: Checking arguments count...";
 if [ ${#} -eq 0 ]; then {
     logger --id --rfc5424 --stderr --tag 'info' --priority 'user.info' -- "[${STR_NAME}]: Script called with ${#} arguments. Printing help and exit." 
     print_help;
@@ -553,8 +554,7 @@ else {
     logger --id --rfc5424 --tag 'debug' --priority 'user.debug' -- "[${STR_NAME}]: Arguments count: ${#}. Arguments: (${*}).";
 }
 fi;
-
-# agument processing
+logger --id --rfc5424 --tag 'debug' --priority 'user.debug' -- "[${STR_NAME}]: Matching arguments with local parameters...";
 while getopts "${STR_SHORT_O}" name; do {
     case "${name}" in
         'a')  # s3 bucket access key
