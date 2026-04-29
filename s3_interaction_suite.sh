@@ -117,7 +117,7 @@ function perform_args_checks() {
     esac;
 
     logger --id --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[${STR_NAME}]: perform_args_checks, checking backend value.";
-    case "${1}" in
+    case "${2}" in
         'CURL' | 'NETCAT' | 'OLDCURL' | 'OPENSSL' | 'WGET')
             logger --id --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[${STR_NAME}]: perform_args_checks, backend value is correct.";
             ;;
