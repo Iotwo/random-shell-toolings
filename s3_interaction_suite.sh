@@ -219,6 +219,8 @@ function perform_request_to_s3() {
 
     logger --id="${$}" --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[${STR_NAME}]: perform_request_to_s3, function called with args(${#}): [${*}].";
 
+    declare -i anim_pid=-1;
+
     declare dt_val='';  # used as global var in
     declare str_to_sign='';  # used as global var 
     declare signature='';  # used as global var 
@@ -265,7 +267,8 @@ function perform_request_to_s3() {
 
     logger --id="${$}" --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[${STR_NAME}]: perform_request_to_s3, ${2} selected as backend.";
     logger --id="${$}" --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[${STR_NAME}]: perform_request_to_s3, performing \'${1}\' request.";
-    
+    init_spinner_animation&
+    anim_pid=${!};
     case "${2}" in
         'CURL') 
             case "${1}" in 
@@ -453,7 +456,10 @@ function perform_request_to_s3() {
             response_code=$(echo -en "${response}" | awk -F' ' '/HTTP\/[0-9.]+/{print $2}');
             ;;
     esac;
+    if [ -n ${anim_pid} ]; then { kill "${anim_pid}"; }
+    fi;
     logger --id="${$}" --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[${STR_NAME}]: perform_request_to_s3, Result parsed.";
+    
 
     logger --id="${$}" --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[${STR_NAME}]: perform_request_to_s3, Processing response...";
     if [ "${response_code}" == "200" ]; then {
@@ -531,10 +537,11 @@ function print_help() {
     echo -e "\tExample: ${0} -b WGET -r PUT -f s3.storage.ru -p 9000 -a myaccesskeytos3 -s mysecretkeytos3 -o bucket/target/object/name -l /path/to/upload/file";
 }
 
-function load_spinner_animation() {
+function init_spinner_animation() {
 
-    logger --id="${$}" --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[${STR_NAME}]: load_spinner_animation, function called.";
+    logger --id="${$}" --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[${STR_NAME}]: init_spinner_animation, function called.";
 
+    local c;
     declare -a chars=( '|' '/' '-' '\' );
     
     while true; do {
