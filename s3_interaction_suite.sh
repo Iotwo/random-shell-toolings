@@ -62,34 +62,34 @@ function perform_access_checks() {
     #   (1) - exact file name
     ############################################################
 
-    logger --id --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[${STR_NAME}]: perform_access_checks, function called with args(${#}): [${*}].";
+    logger --id="${$}" --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[${STR_NAME}]: perform_access_checks, function called with args(${#}): [${*}].";
 
     if [ -z "${1}" ]; 
     then {
-        logger --id --rfc5424 --stderr --tag 'error' --priority 'local7.error' -- "[${STR_NAME}]: perform_access_checks, file name not set: \'${1}\'.";
+        logger --id="${$}" --rfc5424 --stderr --tag 'error' --priority 'local7.error' -- "[${STR_NAME}]: perform_access_checks, file name not set: \'${1}\'.";
         return 1;
     }
     fi;
     if [ ! -f "${1}" ]; 
     then {
-        logger --id --rfc5424 --stderr --tag 'error' --priority 'local7.error' -- "[${STR_NAME}]: perform_access_checks, file \'${1}\' does not exist!";
+        logger --id="${$}" --rfc5424 --stderr --tag 'error' --priority 'local7.error' -- "[${STR_NAME}]: perform_access_checks, file \'${1}\' does not exist!";
         return 1; 
     }
     fi;
     if [ ! -r "${1}" ]; 
     then {
-        logger --id --rfc5424 --stderr --tag 'error' --priority 'local7.error' -- "[${STR_NAME}]: perform_access_checks, file \'${1}\' is not readable!";
+        logger --id="${$}" --rfc5424 --stderr --tag 'error' --priority 'local7.error' -- "[${STR_NAME}]: perform_access_checks, file \'${1}\' is not readable!";
         return 1;
     }
     fi;
     if [ ! -w "${1}" ]; 
     then {
-        logger --id --rfc5424 --stderr --tag 'error' --priority 'local7.error' -- "[${STR_NAME}]: perform_access_checks, file \'${1}\' is not writable!";
+        logger --id="${$}" --rfc5424 --stderr --tag 'error' --priority 'local7.error' -- "[${STR_NAME}]: perform_access_checks, file \'${1}\' is not writable!";
         return 1;
     }
     fi;
 
-    logger --id --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[${STR_NAME}]: perform_access_checks, all checks passed."
+    logger --id="${$}" --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[${STR_NAME}]: perform_access_checks, all checks passed."
 
     return 0;
 }
@@ -103,26 +103,26 @@ function perform_args_checks() {
     #   (2) - backend
     ############################################################
 
-     logger --id --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[${STR_NAME}]: perform_args_checks, function called with args(${#}): [${*}].";
+     logger --id="${$}" --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[${STR_NAME}]: perform_args_checks, function called with args(${#}): [${*}].";
 
-    logger --id --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[${STR_NAME}]: perform_args_checks, checking request type.";
+    logger --id="${$}" --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[${STR_NAME}]: perform_args_checks, checking request type.";
     case "${1}" in
         'GET' | 'HEAD' | 'PUT')
-            logger --id --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[${STR_NAME}]: perform_args_checks, request type is correct.";
+            logger --id="${$}" --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[${STR_NAME}]: perform_args_checks, request type is correct.";
             ;;
         *)
-            logger --id --rfc5424 --tag 'error' --priority 'local7.error' -- "[${STR_NAME}]: perform_args_checks, unsupported request type.";
+            logger --id="${$}" --rfc5424 --tag 'error' --priority 'local7.error' -- "[${STR_NAME}]: perform_args_checks, unsupported request type.";
             return 1;
             ;;
     esac;
 
-    logger --id --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[${STR_NAME}]: perform_args_checks, checking backend value.";
+    logger --id="${$}" --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[${STR_NAME}]: perform_args_checks, checking backend value.";
     case "${2}" in
         'CURL' | 'NETCAT' | 'OLDCURL' | 'OPENSSL' | 'WGET')
-            logger --id --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[${STR_NAME}]: perform_args_checks, backend value is correct.";
+            logger --id="${$}" --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[${STR_NAME}]: perform_args_checks, backend value is correct.";
             ;;
         *)
-            logger --id --rfc5424 --tag 'error' --priority 'local7.error' -- "[${STR_NAME}]: perform_args_checks, unsupported backend.";
+            logger --id="${$}" --rfc5424 --tag 'error' --priority 'local7.error' -- "[${STR_NAME}]: perform_args_checks, unsupported backend.";
             return 1;
             ;;
     esac;
@@ -138,19 +138,19 @@ function perform_tooling_utility_checks() {
     #   (1) - used backend
     ############################################################
 
-    logger --id --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[${STR_NAME}]: perform_tooling_utility_checks, function called with args(${#}): [${*}].";
+    logger --id="${$}" --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[${STR_NAME}]: perform_tooling_utility_checks, function called with args(${#}): [${*}].";
 
     declare FLOAT_OLD_CURL_MAX_VER='8.2.1';
 
     declare current_curl_ver='';
     declare exists='';
 
-    logger --id --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[${STR_NAME}]: perform_tooling_utility_checks, checking backend ${1} exists...";
+    logger --id="${$}" --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[${STR_NAME}]: perform_tooling_utility_checks, checking backend ${1} exists...";
     case "${1}" in
         'OLDCURL' | 'CURL')
             exists="$(command -v 'curl';)";
             current_curl_ver=$(curl --version | awk -F' ' '{print $2;}' | head -n 1;)
-            logger --id --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[${STR_NAME}]: perform_tooling_utility_checks, gathered cURL version is ${current_curl_ver}";
+            logger --id="${$}" --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[${STR_NAME}]: perform_tooling_utility_checks, gathered cURL version is ${current_curl_ver}";
             ;;
         'WGET')
             exists="$(command -v 'wget';)";
@@ -162,13 +162,13 @@ function perform_tooling_utility_checks() {
             exists="$(command -v 'netcat';)";
             ;;
         *)
-            logger --id --rfc5424 --stderr --tag 'error' --priority 'local7.error' -- "[${STR_NAME}]: perform_tooling_utility_checks, Unsupported backend type. Aborting.";
+            logger --id="${$}" --rfc5424 --stderr --tag 'error' --priority 'local7.error' -- "[${STR_NAME}]: perform_tooling_utility_checks, Unsupported backend type. Aborting.";
             exit 1;
             ;;
     esac;
     if [ -z "${exists}" ];
     then {
-        logger --id --rfc5424 --stderr --tag 'error' --priority 'local7.error' -- "[${STR_NAME}]: perform_tooling_utility_checks, backend ${1} does not persist in the system. Aborting with error.";
+        logger --id="${$}" --rfc5424 --stderr --tag 'error' --priority 'local7.error' -- "[${STR_NAME}]: perform_tooling_utility_checks, backend ${1} does not persist in the system. Aborting with error.";
         exit 1;
     }
     fi;
@@ -182,19 +182,19 @@ function perform_tooling_utility_checks() {
             exists=$(printf '%s\n' "${FLOAT_OLD_CURL_MAX_VER}" "${current_curl_ver}" | sort --version-sort --reverse - | head --lines=1 -);  # highest curl's version stored here
             ;;
         *)
-            logger --id --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[${STR_NAME}]: perform_tooling_utility_checks, choosen backend persist.";
+            logger --id="${$}" --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[${STR_NAME}]: perform_tooling_utility_checks, choosen backend persist.";
             return 0;
             ;;
     esac;
 
     if [ "${exists}" == "${FLOAT_OLD_CURL_MAX_VER}" ];
     then {
-        logger --id --rfc5424 --stderr --tag 'error' --priority 'local7.error' -- "[${STR_NAME}]: perform_tooling_utility_checks, gathered cURL version is not supported by this backend option. Aborting.";
+        logger --id="${$}" --rfc5424 --stderr --tag 'error' --priority 'local7.error' -- "[${STR_NAME}]: perform_tooling_utility_checks, gathered cURL version is not supported by this backend option. Aborting.";
         exit 1;
     }
     fi;
 
-    logger --id --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[${STR_NAME}]: perform_tooling_utility_checks, choosen backend persist.";
+    logger --id="${$}" --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[${STR_NAME}]: perform_tooling_utility_checks, choosen backend persist.";
 
     return 0;
 }
@@ -217,7 +217,7 @@ function perform_request_to_s3() {
     #   (11) - URI resource access schema (optional)
     ############################################################
 
-    logger --id --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[${STR_NAME}]: perform_request_to_s3, function called with args(${#}): [${*}].";
+    logger --id="${$}" --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[${STR_NAME}]: perform_request_to_s3, function called with args(${#}): [${*}].";
 
     declare dt_val='';  # used as global var in
     declare str_to_sign='';  # used as global var 
@@ -237,19 +237,19 @@ function perform_request_to_s3() {
     declare header_user_agent='';
 
     if [ "${1}" == "PUT" ]; then {
-        logger --id --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[${STR_NAME}]: perform_request_to_s3, checking file permissions for ${1} request.";
+        logger --id="${$}" --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[${STR_NAME}]: perform_request_to_s3, checking file permissions for ${1} request.";
         perform_access_checks "${8}";
         method_result=${?};
         if [ ${method_result} -ne 0 ];  then {
-            logger --id --rfc5424 --stderr --tag 'error' --priority 'local7.error' -- "[${STR_NAME}]: perform_request_to_s3, ${1} request cannot be performed, not enough permissions.";
+            logger --id="${$}" --rfc5424 --stderr --tag 'error' --priority 'local7.error' -- "[${STR_NAME}]: perform_request_to_s3, ${1} request cannot be performed, not enough permissions.";
             return 1;
         }
         fi;
-        logger --id --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[${STR_NAME}]: perform_request_to_s3, file permissions checks passed.";
+        logger --id="${$}" --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[${STR_NAME}]: perform_request_to_s3, file permissions checks passed.";
     }
     fi;
 
-    logger --id --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[${STR_NAME}]: perform_request_to_s3, preparing request query and headers...";
+    logger --id="${$}" --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[${STR_NAME}]: perform_request_to_s3, preparing request query and headers...";
     dt_val="$(date -R)";
     str_to_sign="${1}\n\napplication/octet-stream\n${dt_val}\n/${7}";
     signature="$(echo -en "${str_to_sign}" | openssl sha1 -hmac "${6}" -binary | base64 -)";
@@ -261,16 +261,16 @@ function perform_request_to_s3() {
     if [ -n "${8}" ];
     then { header_content_len="Contetn-Length: $(wc --bytes < "${8}")"; };
     fi;
-    logger --id --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[${STR_NAME}]: perform_request_to_s3, query and headers prapared.";
+    logger --id="${$}" --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[${STR_NAME}]: perform_request_to_s3, query and headers prapared.";
 
-    logger --id --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[${STR_NAME}]: perform_request_to_s3, ${2} selected as backend.";
+    logger --id="${$}" --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[${STR_NAME}]: perform_request_to_s3, ${2} selected as backend.";
     case "${2}" in
         'CURL') 
-            logger --id --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[${STR_NAME}]: perform_request_to_s3, performing \'${1}\' request.";
+            logger --id="${$}" --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[${STR_NAME}]: perform_request_to_s3, performing \'${1}\' request.";
             case "${1}" in 
                 'GET')
                     if [ -z "${7}" ]; then {
-                        logger --id --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[${STR_NAME}]: perform_request_to_s3, Argument \'local path\' is not set. Downloaded data will be saved with s3-object name.";
+                        logger --id="${$}" --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[${STR_NAME}]: perform_request_to_s3, Argument \'local path\' is not set. Downloaded data will be saved with s3-object name.";
                         response="$(curl --location --silent --request 'GET' \
                                            --header "${header_content_type}" \
                                            --aws-sigv4 "${9}" \
@@ -280,7 +280,7 @@ function perform_request_to_s3() {
                                            --remote-name;)";
                     }
                     else {
-                        logger --id --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[${STR_NAME}]: perform_request_to_s3, Argument \'local path\' is set. Downloaded data will be saved as ${8}.";
+                        logger --id="${$}" --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[${STR_NAME}]: perform_request_to_s3, Argument \'local path\' is set. Downloaded data will be saved as ${8}.";
                         response="$(curl --location --silent --request 'GET' \
                                            --header "${header_content_type}" \
                                            --aws-sigv4 "${9}" \
@@ -310,12 +310,12 @@ function perform_request_to_s3() {
                     ;;
             esac;
 
-            logger --id --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[${STR_NAME}]: perform_request_to_s3, request performed. Parsing result.";
+            logger --id="${$}" --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[${STR_NAME}]: perform_request_to_s3, request performed. Parsing result.";
             response_code=$(echo "${response}" | tail --lines 1 | cut --delimiter=',' --fields=1;);
-            logger --id --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[${STR_NAME}]: perform_request_to_s3, Result parsed.";
+            logger --id="${$}" --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[${STR_NAME}]: perform_request_to_s3, Result parsed.";
             ;;
         'NETCAT')
-            logger --id --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[${STR_NAME}]: perform_request_to_s3, performing \'${1}\' request.";
+            logger --id="${$}" --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[${STR_NAME}]: perform_request_to_s3, performing \'${1}\' request.";
             header_user_agent='User-Agent: netcat/v1.10-50)';
             (printf '%s\r\n' "${query_line}";
              printf '%s\r\n' "${header_accept}";
@@ -331,16 +331,16 @@ function perform_request_to_s3() {
              fi; ) |\
             netcat "${3}" "${4}" > "${8}.tmp";
             
-            logger --id --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[${STR_NAME}]: perform_request_to_s3, request performed. Parsing result.";
+            logger --id="${$}" --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[${STR_NAME}]: perform_request_to_s3, request performed. Parsing result.";
             response_code=$(head --silent --lines=1 "${8}.tmp" | awk -F' ' '/HTTP\/[0-9.]+/{print $2}';);
-            logger --id --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[${STR_NAME}]: perform_request_to_s3, Result parsed.";
+            logger --id="${$}" --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[${STR_NAME}]: perform_request_to_s3, Result parsed.";
             ;;
         'OLDCURL')
-            logger --id --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[${STR_NAME}]: perform_request_to_s3, perform_request_to_s3, performing \'${1}\' request.";
+            logger --id="${$}" --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[${STR_NAME}]: perform_request_to_s3, perform_request_to_s3, performing \'${1}\' request.";
             case "${1}" in 
                 'GET')
                     if [ -z "${8}" ]; then {
-                        logger --id --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[${STR_NAME}]: Argument \'local path\' is not set. Downloaded data will be saved with s3-object name.";
+                        logger --id="${$}" --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[${STR_NAME}]: Argument \'local path\' is not set. Downloaded data will be saved with s3-object name.";
                         response="$(curl --location --silent --request 'GET' \
                                         --header "${header_host}" \
                                         --header "${header_date}" \
@@ -351,7 +351,7 @@ function perform_request_to_s3() {
                                         --remote-name ;)";
                     }
                     else {
-                        logger --id --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[${STR_NAME}]: Argument \'local path\' is set. Downloaded data will be saved as ${5}.";
+                        logger --id="${$}" --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[${STR_NAME}]: Argument \'local path\' is set. Downloaded data will be saved as ${5}.";
                         response="$(curl --location --silent --request 'GET' \
                                         --header "${header_host}" \
                                         --header "${header_date}" \
@@ -385,12 +385,12 @@ function perform_request_to_s3() {
                     ;;
             esac;
 
-            logger --id --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[${STR_NAME}]: perform_request_to_s3, request performed. Parsing result.";
+            logger --id="${$}" --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[${STR_NAME}]: perform_request_to_s3, request performed. Parsing result.";
             response_code=${response};
-            logger --id --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[${STR_NAME}]: perform_request_to_s3, Result parsed.";
+            logger --id="${$}" --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[${STR_NAME}]: perform_request_to_s3, Result parsed.";
             ;;
         'OPENSSL')
-            logger --id --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[${STR_NAME}]: perform_request_to_s3, performing \'${1}\' request.";
+            logger --id="${$}" --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[${STR_NAME}]: perform_request_to_s3, performing \'${1}\' request.";
             header_user_agent="User-Agent: $(openssl --version 2>&1 | cut --delimiter=' ' --fields='1,2' --output-delimiter='/')";
             (printf '%s\r\n' "${query_line}";
              printf '%s\r\n' "${header_accept}";
@@ -406,16 +406,16 @@ function perform_request_to_s3() {
              fi; ) |\
             openssl s_client -quiet -ign_eof -connect "${3}:${4}" > "${8}.tmp";
 
-            logger --id --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[${STR_NAME}]: perform_request_to_s3, request performed. Parsing result.";
+            logger --id="${$}" --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[${STR_NAME}]: perform_request_to_s3, request performed. Parsing result.";
             response_code=$(head --silent --lines=1 "${8}.tmp" | awk -F' ' '/HTTP\/[0-9.]+/{print $2}';);
-            logger --id --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[${STR_NAME}]: perform_request_to_s3, Result parsed.";
+            logger --id="${$}" --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[${STR_NAME}]: perform_request_to_s3, Result parsed.";
             ;;
         'WGET')
-            logger --id --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[${STR_NAME}]: perform_request_to_s3, performing \'${1}\' request.";
+            logger --id="${$}" --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[${STR_NAME}]: perform_request_to_s3, performing \'${1}\' request.";
             case "${1}" in 
                 'GET')
                     if [ -z "${8}" ]; then {
-                        logger --id --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[${STR_NAME}]: perform_request_to_s3, ";
+                        logger --id="${$}" --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[${STR_NAME}]: perform_request_to_s3, ";
                         response="$(wget --quiet --no-check-certificate --no-http-keep-alive --server-response --method='GET' \
                                         --header="${header_authorization}" \
                                         --header="${header_content_type}" \
@@ -424,7 +424,7 @@ function perform_request_to_s3() {
                                         "${11}://${3}:${4}/${7}" 2>&1;)";
                     }
                     else {
-                        logger --id --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[${STR_NAME}]: perform_request_to_s3, ";
+                        logger --id="${$}" --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[${STR_NAME}]: perform_request_to_s3, ";
                         response="$(wget --quiet --no-check-certificate --no-http-keep-alive --server-response --method='GET' \
                                         --header="${header_authorization}" \
                                         --header="${header_content_type}" \
@@ -456,43 +456,43 @@ function perform_request_to_s3() {
                     ;;
             esac;
 
-            logger --id --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[${STR_NAME}]: perform_request_to_s3, request performed. Parsing result.";
+            logger --id="${$}" --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[${STR_NAME}]: perform_request_to_s3, request performed. Parsing result.";
             response_code=$(echo -en "${response}" | awk -F' ' '/HTTP\/[0-9.]+/{print $2}');
-            logger --id --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[${STR_NAME}]: perform_request_to_s3, Result parsed.";
+            logger --id="${$}" --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[${STR_NAME}]: perform_request_to_s3, Result parsed.";
             ;;
     esac;
 
-    logger --id --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[${STR_NAME}]: perform_request_to_s3, Processing response...";
+    logger --id="${$}" --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[${STR_NAME}]: perform_request_to_s3, Processing response...";
     if [ "${response_code}" == "200" ]; then {
-        logger --id --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[$STR_NAME]: perform_request_to_s3, Request executed successfully.";
+        logger --id="${$}" --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[$STR_NAME]: perform_request_to_s3, Request executed successfully.";
         case "${1}" in
             'GET')
-                logger --id --rfc5424 --stderr --tag 'info' --priority 'local7.info' -- "[$STR_NAME]: perform_request_to_s3, Response code: ${response_code}. Object ${7} downloaded.";
+                logger --id="${$}" --rfc5424 --stderr --tag 'info' --priority 'local7.info' -- "[$STR_NAME]: perform_request_to_s3, Response code: ${response_code}. Object ${7} downloaded.";
                 if [ "${2}" == "NETCAT" ] || [ "${2}" == "OPENSSL" ]; then {
-                    logger --id --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[${STR_NAME}]: perform_request_to_s3, Processing recieved object...";
-                    logger --id --rfc5424 --stderr --tag 'info' --priority 'local7.info' -- "[${STR_NAME}]: perform_request_to_s3, object recieved via ${2} might be processed incorrectly if it is binary type!";
+                    logger --id="${$}" --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[${STR_NAME}]: perform_request_to_s3, Processing recieved object...";
+                    logger --id="${$}" --rfc5424 --stderr --tag 'info' --priority 'local7.info' -- "[${STR_NAME}]: perform_request_to_s3, object recieved via ${2} might be processed incorrectly if it is binary type!";
                     tr -d '\r' < "${8}.tmp" | sed '1,/^$/d' > "${8}";
                 }
                 fi;
                 ;;
             'HEAD')
-                logger --id --rfc5424 --stderr --tag 'info' --priority 'local7.info' -- "[$STR_NAME]: perform_request_to_s3, Response code: ${response_code}. Object ${7} exists."
+                logger --id="${$}" --rfc5424 --stderr --tag 'info' --priority 'local7.info' -- "[$STR_NAME]: perform_request_to_s3, Response code: ${response_code}. Object ${7} exists."
                 ;;
             'PUT')
-                logger --id --rfc5424 --stderr --tag 'info' --priority 'local7.info' -- "[$STR_NAME]: perform_request_to_s3, Response code: ${response_code}. Object ${8} uploaded as ${7}";
+                logger --id="${$}" --rfc5424 --stderr --tag 'info' --priority 'local7.info' -- "[$STR_NAME]: perform_request_to_s3, Response code: ${response_code}. Object ${8} uploaded as ${7}";
                 ;;
         esac;
 
         exit_code=0;
     }
     elif [ "${response_code}" == "404" ]; then {
-        logger --id --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[$STR_NAME]: perform_request_to_s3, Request executed successfully.";
-        logger --id --rfc5424 --stderr --tag 'info' --priority 'local7.info' -- "[$STR_NAME]: perform_request_to_s3, Response code: ${response_code}. Requested object is missing on the resource.";
+        logger --id="${$}" --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[$STR_NAME]: perform_request_to_s3, Request executed successfully.";
+        logger --id="${$}" --rfc5424 --stderr --tag 'info' --priority 'local7.info' -- "[$STR_NAME]: perform_request_to_s3, Response code: ${response_code}. Requested object is missing on the resource.";
 
         exit_code=0;
     }
     else {
-        logger --id --rfc5424 --stderr --tag 'warning' --priority 'local7.warning' -- "[$STR_NAME]: perform_request_to_s3, Something went wrong.";
+        logger --id="${$}" --rfc5424 --stderr --tag 'warning' --priority 'local7.warning' -- "[$STR_NAME]: perform_request_to_s3, Something went wrong.";
         if [ "${2}" == "NETCAT" ] || [ "${2}" == "OPENSSL" ]; then { cat "${8}.tmp"; }
         fi;
 
@@ -501,17 +501,17 @@ function perform_request_to_s3() {
     fi;
 
     if [ "${2}" == "NETCAT" ] || [ "${2}" == "OPENSSL" ]; then {
-        logger --id --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[${STR_NAME}]: perform_request_to_s3, Performing cleanup, removing ${8}.tmp.";
+        logger --id="${$}" --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[${STR_NAME}]: perform_request_to_s3, Performing cleanup, removing ${8}.tmp.";
         rm -f "${8}.tmp";
     }
     fi;
 
-    logger --id --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[$STR_NAME]: perform_request_to_s3, Function exited with code ${exit_code}.";
+    logger --id="${$}" --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[$STR_NAME]: perform_request_to_s3, Function exited with code ${exit_code}.";
     return ${exit_code};
 }
 
 function print_help() {
-    logger --id --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[${STR_NAME}]: help, function called.";
+    logger --id="${$}" --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[${STR_NAME}]: help, function called.";
     echo "Name: S3 interaction suite";
     echo "Description: Read meta, download objects from or upload to S3-compatible storage";
     echo "Req: read-write access on current working directory, cURL v7.64 and higher.";
@@ -542,21 +542,21 @@ function print_help() {
 
 perform_basic_utility_checks;
 
-logger --id --rfc5424 --stderr --tag 'info' --priority 'user.info' -- "[${STR_NAME}]: Start ${0}.";
+logger --id="${$}" --rfc5424 --stderr --tag 'info' --priority 'user.info' -- "[${STR_NAME}]: Start ${0}.";
 
-logger --id --rfc5424 --tag 'debug' --priority 'user.debug' -- "[${STR_NAME}]: Parsing passed arguments.";
-logger --id --rfc5424 --tag 'debug' --priority 'user.debug' -- "[${STR_NAME}]: Checking arguments count...";
+logger --id="${$}" --rfc5424 --tag 'debug' --priority 'user.debug' -- "[${STR_NAME}]: Parsing passed arguments.";
+logger --id="${$}" --rfc5424 --tag 'debug' --priority 'user.debug' -- "[${STR_NAME}]: Checking arguments count...";
 if [ ${#} -eq 0 ]; then {
-    logger --id --rfc5424 --stderr --tag 'info' --priority 'user.info' -- "[${STR_NAME}]: Script called with ${#} arguments. Printing help and exit." 
+    logger --id="${$}" --rfc5424 --stderr --tag 'info' --priority 'user.info' -- "[${STR_NAME}]: Script called with ${#} arguments. Printing help and exit." 
     print_help;
-    logger --id --rfc5424 --stderr --tag 'info' --priority 'user.info' -- "[${STR_NAME}]: ${0} finished.";
+    logger --id="${$}" --rfc5424 --stderr --tag 'info' --priority 'user.info' -- "[${STR_NAME}]: ${0} finished.";
     exit 0;
 }
 else {
-    logger --id --rfc5424 --tag 'debug' --priority 'user.debug' -- "[${STR_NAME}]: Arguments count: ${#}. Arguments: (${*}).";
+    logger --id="${$}" --rfc5424 --tag 'debug' --priority 'user.debug' -- "[${STR_NAME}]: Arguments count: ${#}. Arguments: (${*}).";
 }
 fi;
-logger --id --rfc5424 --tag 'debug' --priority 'user.debug' -- "[${STR_NAME}]: Matching arguments with local parameters...";
+logger --id="${$}" --rfc5424 --tag 'debug' --priority 'user.debug' -- "[${STR_NAME}]: Matching arguments with local parameters...";
 while getopts "${STR_SHORT_O}" name; do {
     case "${name}" in
         'a')  # s3 bucket access key
@@ -608,10 +608,10 @@ while getopts "${STR_SHORT_O}" name; do {
             break;
             ;;
         *)
-            logger --id --rfc5424 --stderr --tag 'error' --priority 'user.error' -- "[${STR_NAME}]: ${0} called with unexpected option. Print help and exit.";
+            logger --id="${$}" --rfc5424 --stderr --tag 'error' --priority 'user.error' -- "[${STR_NAME}]: ${0} called with unexpected option. Print help and exit.";
             echo "Unexpected option: ${1}";
             print_help;
-            logger --id --rfc5424 --stderr --tag 'info' --priority 'user.info' -- "[${STR_NAME}]: ${0} finished with error: Unexpected agrument: '${1}'.";
+            logger --id="${$}" --rfc5424 --stderr --tag 'info' --priority 'user.info' -- "[${STR_NAME}]: ${0} finished with error: Unexpected agrument: '${1}'.";
             exit 1;
             ;;
     esac;
@@ -620,30 +620,30 @@ done;
 perform_args_checks "${req}" "${backend}";
 method_result=${?};
 if [ ${method_result} -ne 0 ]; then {
-    logger --id --rfc5424 --stderr --tag 'error' --priority 'user.error' -- "[${STR_NAME}]: Arguments incorrect. Aborting";
+    logger --id="${$}" --rfc5424 --stderr --tag 'error' --priority 'user.error' -- "[${STR_NAME}]: Arguments incorrect. Aborting";
     exit 1;
 }
 fi;
-logger --id --rfc5424 --tag 'debug' --priority 'user.debug' -- "[${STR_NAME}]: Arguments: (backend:${backend}; request:${req}; fqdn:${fqdn}; port:${port}; access-key:${key_id}; secret-key:${key_s}; object-name:${obj}; local-path:${local_path}; aws-sigv4-string:${sigstring}; http-version:${http_ver}; URI-schema:${uri_schema}).";
+logger --id="${$}" --rfc5424 --tag 'debug' --priority 'user.debug' -- "[${STR_NAME}]: Arguments: (backend:${backend}; request:${req}; fqdn:${fqdn}; port:${port}; access-key:${key_id}; secret-key:${key_s}; object-name:${obj}; local-path:${local_path}; aws-sigv4-string:${sigstring}; http-version:${http_ver}; URI-schema:${uri_schema}).";
 
-logger --id --rfc5424 --tag 'debug' --priority 'user.debug' -- "[${STR_NAME}]: Checking backend and supportive tooling persit in system...";
+logger --id="${$}" --rfc5424 --tag 'debug' --priority 'user.debug' -- "[${STR_NAME}]: Checking backend and supportive tooling persit in system...";
 perform_tooling_utility_checks "${backend}";
 
 # executions
-logger --id --rfc5424 --stderr --tag 'info' --priority 'user.info' -- "[${STR_NAME}]: Initiating request to endpoint...";
+logger --id="${$}" --rfc5424 --stderr --tag 'info' --priority 'user.info' -- "[${STR_NAME}]: Initiating request to endpoint...";
 perform_request_to_s3 "${req}" "${backend}" "${fqdn}" "${port}" "${key_id}" "${key_s}" "${obj}" "${local_path}" "${sigstring}" "${http_ver}" "${uri_schema}";
 method_result=${?};
-logger --id --rfc5424 --tag 'debug' --priority 'user.debug' -- "[${STR_NAME}]: subroutine return code: ${method_result}";
+logger --id="${$}" --rfc5424 --tag 'debug' --priority 'user.debug' -- "[${STR_NAME}]: subroutine return code: ${method_result}";
 
 # process result
 if [ ${method_result} -eq 0 ]; then {
-    logger --id --rfc5424 --stderr --tag 'info' --priority 'user.info' -- "[${STR_NAME}]: Task executed successfully.";
-    logger --id --rfc5424 --stderr --tag 'info' --priority 'user.info' -- "[${STR_NAME}]: ${0} finished.";
+    logger --id="${$}" --rfc5424 --stderr --tag 'info' --priority 'user.info' -- "[${STR_NAME}]: Task executed successfully.";
+    logger --id="${$}" --rfc5424 --stderr --tag 'info' --priority 'user.info' -- "[${STR_NAME}]: ${0} finished.";
 }
     exit 0;
 else {
-    logger --id --rfc5424 --stderr --tag 'warning' --priority 'user.warning' -- "[${STR_NAME}]: Error occured on task execution.";
-    logger --id --rfc5424 --stderr --tag 'info' --priority 'user.info' -- "[${STR_NAME}]: ${0} finished with error code 1.";
+    logger --id="${$}" --rfc5424 --stderr --tag 'warning' --priority 'user.warning' -- "[${STR_NAME}]: Error occured on task execution.";
+    logger --id="${$}" --rfc5424 --stderr --tag 'info' --priority 'user.info' -- "[${STR_NAME}]: ${0} finished with error code 1.";
     exit 1;
 }
 fi;
