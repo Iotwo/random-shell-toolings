@@ -264,9 +264,10 @@ function perform_request_to_s3() {
     logger --id="${$}" --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[${STR_NAME}]: perform_request_to_s3, query and headers prapared.";
 
     logger --id="${$}" --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[${STR_NAME}]: perform_request_to_s3, ${2} selected as backend.";
+    logger --id="${$}" --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[${STR_NAME}]: perform_request_to_s3, performing \'${1}\' request.";
+    
     case "${2}" in
         'CURL') 
-            logger --id="${$}" --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[${STR_NAME}]: perform_request_to_s3, performing \'${1}\' request.";
             case "${1}" in 
                 'GET')
                     if [ -z "${7}" ]; then {
@@ -312,10 +313,8 @@ function perform_request_to_s3() {
 
             logger --id="${$}" --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[${STR_NAME}]: perform_request_to_s3, request performed. Parsing result.";
             response_code=$(echo "${response}" | tail --lines 1 | cut --delimiter=',' --fields=1;);
-            logger --id="${$}" --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[${STR_NAME}]: perform_request_to_s3, Result parsed.";
             ;;
         'NETCAT')
-            logger --id="${$}" --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[${STR_NAME}]: perform_request_to_s3, performing \'${1}\' request.";
             header_user_agent='User-Agent: netcat/v1.10-50)';
             (printf '%s\r\n' "${query_line}";
              printf '%s\r\n' "${header_accept}";
@@ -333,10 +332,8 @@ function perform_request_to_s3() {
             
             logger --id="${$}" --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[${STR_NAME}]: perform_request_to_s3, request performed. Parsing result.";
             response_code=$(head --silent --lines=1 "${8}.tmp" | awk -F' ' '/HTTP\/[0-9.]+/{print $2}';);
-            logger --id="${$}" --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[${STR_NAME}]: perform_request_to_s3, Result parsed.";
             ;;
         'OLDCURL')
-            logger --id="${$}" --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[${STR_NAME}]: perform_request_to_s3, perform_request_to_s3, performing \'${1}\' request.";
             case "${1}" in 
                 'GET')
                     if [ -z "${8}" ]; then {
@@ -387,10 +384,8 @@ function perform_request_to_s3() {
 
             logger --id="${$}" --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[${STR_NAME}]: perform_request_to_s3, request performed. Parsing result.";
             response_code=${response};
-            logger --id="${$}" --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[${STR_NAME}]: perform_request_to_s3, Result parsed.";
             ;;
         'OPENSSL')
-            logger --id="${$}" --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[${STR_NAME}]: perform_request_to_s3, performing \'${1}\' request.";
             header_user_agent="User-Agent: $(openssl --version 2>&1 | cut --delimiter=' ' --fields='1,2' --output-delimiter='/')";
             (printf '%s\r\n' "${query_line}";
              printf '%s\r\n' "${header_accept}";
@@ -408,10 +403,8 @@ function perform_request_to_s3() {
 
             logger --id="${$}" --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[${STR_NAME}]: perform_request_to_s3, request performed. Parsing result.";
             response_code=$(head --silent --lines=1 "${8}.tmp" | awk -F' ' '/HTTP\/[0-9.]+/{print $2}';);
-            logger --id="${$}" --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[${STR_NAME}]: perform_request_to_s3, Result parsed.";
             ;;
         'WGET')
-            logger --id="${$}" --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[${STR_NAME}]: perform_request_to_s3, performing \'${1}\' request.";
             case "${1}" in 
                 'GET')
                     if [ -z "${8}" ]; then {
@@ -458,9 +451,9 @@ function perform_request_to_s3() {
 
             logger --id="${$}" --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[${STR_NAME}]: perform_request_to_s3, request performed. Parsing result.";
             response_code=$(echo -en "${response}" | awk -F' ' '/HTTP\/[0-9.]+/{print $2}');
-            logger --id="${$}" --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[${STR_NAME}]: perform_request_to_s3, Result parsed.";
             ;;
     esac;
+    logger --id="${$}" --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[${STR_NAME}]: perform_request_to_s3, Result parsed.";
 
     logger --id="${$}" --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[${STR_NAME}]: perform_request_to_s3, Processing response...";
     if [ "${response_code}" == "200" ]; then {
@@ -511,6 +504,7 @@ function perform_request_to_s3() {
 }
 
 function print_help() {
+
     logger --id="${$}" --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[${STR_NAME}]: help, function called.";
     echo "Name: S3 interaction suite";
     echo "Description: Read meta, download objects from or upload to S3-compatible storage";
@@ -535,6 +529,22 @@ function print_help() {
     echo -e "\t-h : call this help.";
     echo -e "\tExample: ${0} -b OLDCURL -r GET -f s3.storage.ru -a myaccesskeytos3 -s mysecretkeytos3 -o bucket/target/object/name";
     echo -e "\tExample: ${0} -b WGET -r PUT -f s3.storage.ru -p 9000 -a myaccesskeytos3 -s mysecretkeytos3 -o bucket/target/object/name -l /path/to/upload/file";
+}
+
+function load_spinner_animation() {
+
+    logger --id="${$}" --rfc5424 --tag 'debug' --priority 'local7.debug' -- "[${STR_NAME}]: load_spinner_animation, function called.";
+
+    declare -a chars=( '|' '/' '-' '\' );
+    
+    while true; do {
+        for c in "${chars[@]}"; do {
+            printf '%s %s\r' "${c}";
+            sleep '0.5';
+        };
+        done;
+    };
+    done;
 }
 
 
